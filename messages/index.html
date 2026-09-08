@@ -8,8 +8,11 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc
+    getFirestore, collection, query, orderBy, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import {
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAVUpLzABT8o_-kDspxCVaAO3CMPUZII04",
@@ -22,42 +25,32 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const auth = getAuth(app);
 
   const lockScreen = document.getElementById("lockScreen");
   const appScreen = document.getElementById("appScreen");
   const passInput = document.getElementById("passInput");
+  const emailInput = document.getElementById("emailInput");
   const passBtn = document.getElementById("passBtn");
   const passError = document.getElementById("passError");
-
-  const SESSION_KEY = "msgs_unlocked_9v";
-
-  async function checkPassword(value) {
-    const snap = await getDoc(doc(db, "PASS", "main"));
-    if (!snap.exists()) return false;
-    const correct = snap.data().value;
-    return String(value) === String(correct);
-  }
+  const logoutBtn = document.getElementById("logoutBtn");
 
   async function tryUnlock() {
-    const value = passInput.value.trim();
-    if (!value) return;
+    const email = emailInput.value.trim();
+    const password = passInput.value;
+    if (!email || !password) {
+      passError.textContent = "Email va parolni kiriting.";
+      return;
+    }
     passBtn.disabled = true;
     passBtn.textContent = "Tekshirilmoqda...";
     passError.textContent = "";
     try {
-      const ok = await checkPassword(value);
-      if (ok) {
-        sessionStorage.setItem(SESSION_KEY, "1");
-        lockScreen.style.display = "none";
-        appScreen.style.display = "block";
-        initApp();
-      } else {
-        passError.textContent = "Parol noto'g'ri.";
-        passInput.value = "";
-        passInput.focus();
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged will handle showing the app
     } catch (err) {
-      passError.textContent = "Xatolik: " + err.message;
+      passError.textContent = "Email yoki parol noto'g'ri.";
+      passInput.value = "";
     } finally {
       passBtn.disabled = false;
       passBtn.textContent = "Kirish";
@@ -66,14 +59,20 @@
 
   passBtn.addEventListener("click", tryUnlock);
   passInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  emailInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  logoutBtn.addEventListener("click", () => signOut(auth));
 
-  if (sessionStorage.getItem(SESSION_KEY) === "1") {
-    lockScreen.style.display = "none";
-    appScreen.style.display = "block";
-    initApp();
-  } else {
-    passInput.focus();
-  }
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      lockScreen.style.display = "none";
+      appScreen.style.display = "block";
+      initApp();
+    } else {
+      lockScreen.style.display = "flex";
+      appScreen.style.display = "none";
+      emailInput.focus();
+    }
+  });
 
   function initApp() {
 
@@ -518,8 +517,19 @@
     text-align: center;
     letter-spacing: 0.05em;
     transition: border-color .15s, box-shadow .15s;
+    margin-top: 10px;
   }
-  #passInput:focus {
+  #emailInput {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    text-align: center;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  #emailInput:focus, #passInput:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px rgba(76,111,255,0.12);
   }
@@ -543,6 +553,21 @@
   }
   #passBtn:hover { background: #3f5fee; }
   #passBtn:disabled { opacity: 0.6; cursor: default; }
+
+  header { position: relative; }
+  #logoutBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #logoutBtn:hover { background: #f1f2f6; color: var(--text); }
 </style>
 </head>
 <body>
@@ -550,9 +575,10 @@
 <div class="lock-wrap" id="lockScreen">
   <div class="lock-box">
     <div class="lock-icon">🔒</div>
-    <h2>Kirish uchun parol</h2>
-    <p>Bu sahifa faqat sinf rahbari uchun. Davom etish uchun parolni kiriting.</p>
-    <input type="password" id="passInput" placeholder="Parol" autocomplete="off">
+    <h2>Kirish</h2>
+    <p>Bu sahifa faqat sinf rahbari uchun. Davom etish uchun tizimga kiring.</p>
+    <input type="email" id="emailInput" placeholder="Email" autocomplete="username">
+    <input type="password" id="passInput" placeholder="Parol" autocomplete="current-password">
     <div class="lock-error" id="passError"></div>
     <button type="button" id="passBtn">Kirish</button>
   </div>
@@ -570,10 +596,12 @@
     <input type="text" id="search" placeholder="Ism, manzil yoki MFY bo'yicha qidirish...">
     <button id="clearSearch" type="button" aria-label="Tozalash">✕</button>
   </div>
+  <button type="button" id="logoutBtn">Chiqish</button>
 </header>
 
 <div class="container">
   <div id="skeleton">
+
     <div class="skeleton-card"></div>
     <div class="skeleton-card"></div>
     <div class="skeleton-card"></div>

@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Ota-onalar to'ldiradigan forma: faqat YANGI hujjat yaratishga ruxsat,
+    // hech kim (login qilmagan holda) o'qiy olmaydi, o'zgartira olmaydi,
+    // o'chira olmaydi.
+    match /oquvchilar/{docId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Boshqa har qanday collection (shu jumladan eski PASS) —
+    // hech kimga, hech qanday holatda ruxsat yo'q.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
