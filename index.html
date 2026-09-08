@@ -44,7 +44,7 @@
     fullNameDropdown.querySelectorAll(".option").forEach(opt => {
       opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19.5 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
       opt.addEventListener("click", (e) => {
-        if (opt.classList.contains("taken")) {
+        if (opt.hidden || takenNames.has(opt.dataset.value)) {
           e.stopPropagation();
           return;
         }
@@ -248,20 +248,20 @@
     track.style.animationDuration = seconds + "s";
   }
 
-  // 1) "oquvchilar" dan taken-name tekshiruvi — bu admin/login talab qiladigan
-  // yopiq collection, shuning uchun anonim (login qilmagan) foydalanuvchi uchun
-  // bu o'qish odatda RAD ETILADI. Xato bo'lsa ham forma ishlashda davom etadi —
-  // faqat "band ism belgilash" funksiyasi ishlamay qoladi, bu kutilgan holat.
+  // 1) "lenta" dan taken-name tekshiruvi — "oquvchilar" o'rniga shu ishlatiladi,
+  // chunki "oquvchilar" login talab qiladi va anonim foydalanuvchi uni o'qiy
+  // olmaydi (permission-denied). "lenta" esa hammaga ochiq va har bir forma
+  // yuborilganda fullName shu yerga ham yoziladi — shuning uchun band ismlarni
+  // aniqlash uchun ishonchli manba.
   try {
-    const q = query(collection(db, "oquvchilar"));
+    const q = query(collection(db, "lenta"));
     onSnapshot(q, (snap) => {
       takenNames = new Set(
         snap.docs.map(d => (d.data().fullName || "").trim()).filter(Boolean)
       );
       markTakenOptions();
     }, () => {
-      // Ruxsat yo'q — bu normal, chunki oquvchilar collection'i yopiq.
-      // Marquee bunga bog'liq emas, pastda alohida ishlaydi.
+      // Kutilmagan xato — taken-check ixtiyoriy funksiya, forma davom etadi.
     });
   } catch (e) {
     // e'tiborsiz qoldiramiz — taken-check ixtiyoriy funksiya
