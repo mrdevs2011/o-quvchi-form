@@ -6,6 +6,16 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<script>
+  // Har safar YANGI sessiyada (yangi tab/ilova ochilganda) sahifani
+  // cache-bust query bilan qayta yuklaydi, shu orqali brauzer/CDN
+  // kesh'ini chetlab o'tib har doim eng oxirgi versiyani oladi.
+  // Bir session ichida (forma to'ldirish jarayonida) faqat 1 marta ishlaydi.
+  if (!sessionStorage.getItem('freshLoaded')) {
+    sessionStorage.setItem('freshLoaded', '1');
+    location.replace(location.pathname + '?v=' + Date.now());
+  }
+</script>
 <title>9-V sinf</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
