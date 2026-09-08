@@ -175,15 +175,61 @@
   function renderMarquee(names) {
     const wrap = document.getElementById("marqueeWrap");
     const track = document.getElementById("marqueeTrack");
+
+    // 0 ta — lenta umuman ko'rsatilmaydi
     if (!names.length) {
       wrap.hidden = true;
       track.innerHTML = "";
+      track.classList.remove("is-static");
       return;
     }
+
     wrap.hidden = false;
-    const pills = names.map(n => `<span class="pill">${n}</span>`).join("");
-    track.innerHTML = pills + pills;
-    const seconds = Math.max(18, names.length * 3.2);
+
+    // 1 ta — scroll qilishning hojati yo'q (aylanadigan narsa yo'q,
+    // 2 nusxa qo'yib CSS animatsiya bersak ham vizual harakat sezilmaydi
+    // yoki "sakrab" ko'rinadi — shuning uchun buni maxsus, statik holat
+    // sifatida ko'rsatamiz: bitta pill, animatsiyasiz, o'rtada turadi)
+    if (names.length === 1) {
+      track.innerHTML = `<span class="pill">${names[0]}</span>`;
+      track.classList.add("is-static");
+      track.style.animationDuration = "";
+      return;
+    }
+
+    // 2+ ta — cheksiz loop-scroll
+    track.classList.remove("is-static");
+
+    // ANIMATSIYA -50% BILAN ISHLAYDI — bu shuni anglatadiki, DOM'da
+    // aylanadigan "BLOK" ANIQ 2 MARTA takrorlangan bo'lishi SHART
+    // (blok1 + blok2, bir xil). 3, 4, 5 marta takrorlasak -50% notoʻgʻri
+    // masofa boʻlib qoladi va loop sakraydi. Shuning uchun avval ismlar
+    // ro'yxatini ICHKARIDA kerakli minimal enga yetguncha ko'paytamiz —
+    // shu kengaytirilgan ro'yxat = "BLOK", va faqat BLOKni 2 marta qo'yamiz.
+    let namesForBlock = names.slice();
+    const wrapWidth = wrap.clientWidth || 320;
+    const minBlockWidth = Math.max(wrapWidth, 320);
+
+    // Taxminiy o'lchash uchun bitta aylanishda joylab ko'ramiz
+    track.classList.remove("is-static");
+    track.innerHTML = namesForBlock.map(n => `<span class="pill">${n}</span>`).join("");
+    let blockWidth = track.scrollWidth || 1;
+
+    // Ism-ro'yxatini blok yetarlicha keng bo'lguncha o'ziga qo'shib boramiz
+    let guard = 0; // cheksiz loopdan himoya
+    while (blockWidth < minBlockWidth && guard < 20) {
+      namesForBlock = namesForBlock.concat(names);
+      track.innerHTML = namesForBlock.map(n => `<span class="pill">${n}</span>`).join("");
+      blockWidth = track.scrollWidth || 1;
+      guard++;
+    }
+
+    const blockHTML = namesForBlock.map(n => `<span class="pill">${n}</span>`).join("");
+    track.innerHTML = blockHTML + blockHTML; // aniq 2x — -50% shu bilan mos
+
+    // Tezlik: blok qancha uzun bo'lsa, shuncha sekin (bir xil "oqim tezligi"
+    // hissi bo'lishi uchun) — lekin min/max chegara bilan.
+    const seconds = Math.min(60, Math.max(18, namesForBlock.length * 2.4));
     track.style.animationDuration = seconds + "s";
   }
 
@@ -638,6 +684,11 @@
     gap: 8px;
     width: max-content;
     animation: scrollNames 24s linear infinite;
+  }
+  .marquee-track.is-static {
+    animation: none;
+    justify-content: center;
+    width: 100%;
   }
   .pill {
     flex: 0 0 auto;
