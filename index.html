@@ -6,6 +6,42 @@
 <title>9-V sinf o'quvchisi ma'lumotlari</title>
 
 <!-- Firebase SDK -->
+<script>
+  // Dropdown logikasi — Firebase'dan MUSTAQIL, tarmoq holatidan qat'i nazar ishlaydi
+  document.addEventListener("DOMContentLoaded", () => {
+    const fullNameBox = document.getElementById("fullNameBox");
+    const fullNameLabel = document.getElementById("fullNameLabel");
+    const fullNameDropdown = document.getElementById("fullNameDropdown");
+    const fullNameInput = document.getElementById("fullName");
+
+    fullNameDropdown.querySelectorAll(".option").forEach(opt => {
+      opt.innerHTML = `<span>${opt.dataset.value}</span><span class="check">✓</span>`;
+      opt.addEventListener("click", () => {
+        fullNameDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+        opt.classList.add("selected");
+        fullNameInput.value = opt.dataset.value;
+        fullNameLabel.textContent = opt.dataset.value;
+        fullNameBox.classList.remove("placeholder");
+        fullNameDropdown.classList.remove("show");
+        fullNameBox.classList.remove("open");
+      });
+    });
+
+    fullNameBox.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fullNameDropdown.classList.toggle("show");
+      fullNameBox.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!fullNameBox.contains(e.target) && !fullNameDropdown.contains(e.target)) {
+        fullNameDropdown.classList.remove("show");
+        fullNameBox.classList.remove("open");
+      }
+    });
+  });
+</script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {

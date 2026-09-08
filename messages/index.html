@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9-V sinf — kelgan ma'lumotlar</title>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, query, orderBy, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAVUpLzABT8o_-kDspxCVaAO3CMPUZII04",
+    authDomain: "malumnotalr.firebaseapp.com",
+    projectId: "malumnotalr",
+    storageBucket: "malumnotalr.firebasestorage.app",
+    messagingSenderId: "573521817927",
+    appId: "1:573521817927:web:96bd83130dd1afe1c89c62"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const listEl = document.getElementById("list");
+  const countEl = document.getElementById("count");
+  const emptyEl = document.getElementById("empty");
+  const searchEl = document.getElementById("search");
+
+  let allDocs = [];
+
+  function render(filterText = "") {
+    const filtered = allDocs.filter(d =>
+      (d.fullName || "").toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    countEl.textContent = `Jami: ${allDocs.length} ta | Ko'rsatilmoqda: ${filtered.length} ta`;
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = "";
+      emptyEl.style.display = "block";
+      return;
+    }
+    emptyEl.style.display = "none";
+
+    listEl.innerHTML = filtered.map((d, i) => `
+      <div class="card">
+        <div class="card-body">
+          <h3>${i + 1}. ${escapeHtml(d.fullName || "—")}</h3>
+          <div class="row"><span class="label">Manzil:</span> ${escapeHtml(d.address || "—")}</div>
+          <div class="row"><span class="label">Ota-ona:</span> ${escapeHtml(d.parentInfo || "—")}</div>
+          <div class="row"><span class="label">Hujjat:</span> ${escapeHtml(d.documentInfo || "—")}</div>
+          <div class="row time">${d.createdAtStr || ""}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  searchEl.addEventListener("input", () => render(searchEl.value));
+
+  const q = query(collection(db, "oquvchilar"), orderBy("createdAt", "desc"));
+
+  onSnapshot(q, (snapshot) => {
+    allDocs = snapshot.docs.map(doc => {
+      const data = doc.data();
+      let createdAtStr = "";
+      if (data.createdAt && data.createdAt.toDate) {
+        createdAtStr = data.createdAt.toDate().toLocaleString("uz-UZ");
+      }
+      return { id: doc.id, ...data, createdAtStr };
+    });
+    render(searchEl.value);
+  }, (err) => {
+    listEl.innerHTML = `<p style="color:#d93025;">Xatolik: ${err.message}</p>`;
+  });
+</script>
+
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f2f4f7;
+    margin: 0;
+    padding: 20px;
+  }
+  header {
+    max-width: 900px;
+    margin: 0 auto 20px;
+  }
+  h1 {
+    font-size: 22px;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+  #count {
+    color: #666;
+    font-size: 13px;
+  }
+  #search {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d7dce3;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+  }
+  #search:focus { border-color: #4c8bf5; }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    display: flex;
+    overflow: hidden;
+  }
+  .card-photo {
+    width: 110px;
+    min-width: 110px;
+    background: #eef1f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .no-photo {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    padding: 10px;
+  }
+  .card-body {
+    padding: 14px 16px;
+    flex: 1;
+  }
+  .card-body h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: #1a1a2e;
+  }
+  .row {
+    font-size: 13.5px;
+    color: #333;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .row .label {
+    font-weight: 600;
+    color: #555;
+  }
+  .row.time {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: #999;
+  }
+  #empty {
+    display: none;
+    text-align: center;
+    color: #888;
+    padding: 40px 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>9-V sinf — kelgan ma'lumotlar</h1>
+  <div id="count">Yuklanmoqda...</div>
+  <input type="text" id="search" placeholder="F.I.Sh bo'yicha qidirish...">
+</header>
+
+<div class="container" id="list"></div>
+<div id="empty">Hozircha hech qanday ma'lumot tushmagan.</div>
+
+</body>
+</html>
