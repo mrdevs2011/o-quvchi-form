@@ -64,7 +64,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const screens = ["welcome", "step-child", "step-address", "step-parent", "step-document", "success"];
+  const screens = ["welcome", "step-child", "step-mfy", "step-street", "step-house", "step-parent", "step-document", "success"];
   let current = 0;
   let takenNames = new Set();
 
@@ -181,26 +181,33 @@
     nav.style.display = (isWelcome || isSuccess) ? "none" : "flex";
 
     if (!isWelcome && !isSuccess) {
-      progressFill.style.width = ((index / 4) * 100) + "%";
+      progressFill.style.width = ((index / 6) * 100) + "%";
     }
 
+    const n = firstNameLatin(document.getElementById("fullName").value);
     if (index === 2) {
-      const n = firstNameLatin(document.getElementById("fullName").value);
-      document.getElementById("addressAsk").textContent = n
-        ? `${n} hozir qayerda yashaydi?`
-        : "Farzandingiz hozir qayerda yashaydi?";
+      document.getElementById("mfyAsk").textContent = n
+        ? `${n} qaysi MFYda yashaydi?`
+        : "Qaysi MFYdansiz?";
     }
     if (index === 3) {
-      const n = firstNameLatin(document.getElementById("fullName").value);
-      document.getElementById("parentAsk").textContent = n
-        ? `${n}ning otasi va onasi haqida ham gapirib o‘ting, iltimos.`
-        : "Farzandingizning otasi va onasi haqida ham gapirib o‘ting, iltimos.";
+      const mfy = document.getElementById("mfy").value;
+      document.getElementById("streetAsk").textContent = mfy
+        ? `${mfy}da qaysi ko‘chada yashaysiz?`
+        : "Qaysi ko‘chada yashaysiz?";
     }
     if (index === 4) {
-      const n = firstNameLatin(document.getElementById("fullName").value);
+      document.getElementById("houseAsk").textContent = "Uy raqami nechchi?";
+    }
+    if (index === 5) {
+      document.getElementById("parentAsk").textContent = n
+        ? `${n}ning otasi va onasining ismini yozamiz`
+        : "Otasi va onasining ismini yozamiz";
+    }
+    if (index === 6) {
       document.getElementById("docAsk").textContent = n
-        ? `${n}ning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?`
-        : "Farzandingizning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?";
+        ? `${n}ning metrikasi bormi?`
+        : "Farzandingizning metrikasi bormi?";
     }
 
     backBtn.style.visibility = index > 1 ? "visible" : "hidden";
@@ -223,23 +230,24 @@
       }
     }
     if (current === 2) {
-      const mfy = document.getElementById("mfy").value.trim();
-      const other = document.getElementById("mfyOther").value.trim();
-      const house = document.getElementById("house").value.trim();
-      if (!mfy) {
-        stepError.textContent = "Avval mahallani tanlang: Komakay yoki Sadda.";
-        return false;
-      }
-      if (mfy === "Boshqa" && !other) {
-        stepError.textContent = "Qaysi mahallada yashashingizni yozing.";
-        return false;
-      }
-      if (!house) {
-        stepError.textContent = "Uy raqami yoki ko‘chani yozib qo‘ying.";
+      if (!document.getElementById("mfy").value.trim()) {
+        stepError.textContent = "Komakay yoki Saddadan birini bosing.";
         return false;
       }
     }
     if (current === 3) {
+      if (!document.getElementById("street").value.trim()) {
+        stepError.textContent = "Ko‘cha nomini yozing.";
+        return false;
+      }
+    }
+    if (current === 4) {
+      if (!document.getElementById("house").value.trim()) {
+        stepError.textContent = "Uy raqamini yozing.";
+        return false;
+      }
+    }
+    if (current === 5) {
       const father = document.getElementById("fatherName").value.trim();
       const mother = document.getElementById("motherName").value.trim();
       if (!father || !mother) {
@@ -247,7 +255,7 @@
         return false;
       }
     }
-    if (current === 4) {
+    if (current === 6) {
       const series = document.getElementById("metrikaSeries").value.trim();
       const number = document.getElementById("metrikaNumber").value.trim();
       const letterOk = /^[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ]{2}$/.test(series);
@@ -274,9 +282,8 @@
     document.getElementById("fullNameBox").classList.add("placeholder");
     document.getElementById("fullNameDropdown").querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
     document.getElementById("mfy").value = "";
-    document.getElementById("mfyOther").value = "";
+    document.getElementById("street").value = "";
     document.getElementById("house").value = "";
-    document.getElementById("otherMfyWrap").hidden = true;
     document.querySelectorAll(".place-card").forEach(c => c.classList.remove("on"));
     document.getElementById("fatherName").value = "";
     document.getElementById("motherName").value = "";
@@ -294,12 +301,10 @@
 
     try {
       const fullName = document.getElementById("fullName").value.trim();
-      const mfyRaw = document.getElementById("mfy").value.trim();
-      const mfyName = mfyRaw === "Boshqa"
-        ? document.getElementById("mfyOther").value.trim()
-        : mfyRaw;
+      const mfyName = document.getElementById("mfy").value.trim();
+      const street = document.getElementById("street").value.trim();
       const house = document.getElementById("house").value.trim();
-      const address = `Andijon viloyati, Oltinko‘l tumani, ${mfyName} MFY, ${house}`;
+      const address = `Andijon viloyati, Oltinko‘l tumani, ${mfyName} MFY, ${street} ko‘chasi, ${house}-uy`;
       const fatherName = document.getElementById("fatherName").value.trim();
       const motherName = document.getElementById("motherName").value.trim();
       const parentInfo = `Otasi: ${fatherName} / Onasi: ${motherName}`;
@@ -314,6 +319,7 @@
         fatherName,
         motherName,
         mfy: mfyName,
+        street,
         house,
         documentInfo,
         createdAt: serverTimestamp()
@@ -359,12 +365,8 @@
       document.querySelectorAll(".place-card").forEach(c => c.classList.remove("on"));
       card.classList.add("on");
       document.getElementById("mfy").value = card.dataset.mfy;
-      const otherWrap = document.getElementById("otherMfyWrap");
-      otherWrap.hidden = card.dataset.mfy !== "Boshqa";
-      if (card.dataset.mfy === "Boshqa") {
-        document.getElementById("mfyOther").focus();
-      }
       stepError.textContent = "";
+      showScreen(3);
     });
   });
 </script>
@@ -659,8 +661,26 @@
     cursor: pointer;
     text-align: left;
   }
-  .place-card .ttl { font-weight: 700; color: #1c2430; font-size: 15px; }
-  .place-card .sub { font-size: 12px; color: #7a8494; margin-top: 4px; }
+  button.place-card {
+    width: 100%;
+    background: #fbfcfe;
+    color: #1c2430;
+    margin-top: 0;
+  }
+  button.place-card:hover { background: #eef4ff; }
+  .place-card {
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .place-card .ttl { font-weight: 800; color: #1c2430; font-size: 20px; }
+  .place-card .sub { font-size: 12px; color: #7a8494; margin-top: 4px; font-weight: 500; }
   .place-card.on {
     border-color: #4c8bf5;
     background: #eef4ff;
@@ -755,31 +775,34 @@
     </div>
   </div>
 
-  <div class="screen" id="step-address">
-    <h1 class="ask" id="addressAsk">Farzandingiz qayerda yashaydi?</h1>
-    <p class="say say-left">Sinfimiz asosan Oltinko‘l tumanida yashaydi. Mahallani bosing.</p>
-    <div class="hint-box">Andijon viloyati · Oltinko‘l tumani</div>
+  <div class="screen" id="step-mfy">
+    <h1 class="ask" id="mfyAsk">Qaysi MFYdansiz?</h1>
+    <p class="say say-left">Oltinko‘l tumani. Ikkitadan birini bosing.</p>
     <div class="place-grid">
-      <div class="place-card" data-mfy="Komakay">
-        <div class="ttl">Komakay MFY</div>
-        <div class="sub">Oltinko‘l tumani</div>
-      </div>
-      <div class="place-card" data-mfy="Sadda">
-        <div class="ttl">Sadda MFY</div>
-        <div class="sub">Oltinko‘l tumani</div>
-      </div>
-      <div class="place-card wide" data-mfy="Boshqa">
-        <div class="ttl">Boshqa mahalla</div>
-        <div class="sub">Komakay yoki Sadda bo‘lmasa</div>
-      </div>
+      <button type="button" class="place-card" data-mfy="Sadda">
+        <div class="ttl">SADDA</div>
+        <div class="sub">MFY</div>
+      </button>
+      <button type="button" class="place-card" data-mfy="Komakay">
+        <div class="ttl">Komakay</div>
+        <div class="sub">MFY</div>
+      </button>
     </div>
     <input type="hidden" id="mfy">
-    <div id="otherMfyWrap" hidden>
-      <label>Qaysi mahalla?</label>
-      <input type="text" id="mfyOther" placeholder="Mahalla nomi">
-    </div>
-    <label>Uy / ko‘cha</label>
-    <input type="text" id="house" placeholder="Masalan: 12-uy yoki Mustaqillik 5">
+  </div>
+
+  <div class="screen" id="step-street">
+    <h1 class="ask" id="streetAsk">Qaysi ko‘chada yashaysiz?</h1>
+    <p class="say say-left">Ko‘cha nomini yozing.</p>
+    <label>Ko‘cha</label>
+    <input type="text" id="street" placeholder="Masalan: Mustaqillik">
+  </div>
+
+  <div class="screen" id="step-house">
+    <h1 class="ask" id="houseAsk">Uy raqami nechchi?</h1>
+    <p class="say say-left">Faqat uy raqamini yozing.</p>
+    <label>Uy raqami</label>
+    <input type="text" id="house" placeholder="Masalan: 12" inputmode="numeric">
   </div>
 
   <div class="screen" id="step-parent">
