@@ -8,7 +8,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, query, orderBy, onSnapshot
+    getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -22,6 +22,60 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  const lockScreen = document.getElementById("lockScreen");
+  const appScreen = document.getElementById("appScreen");
+  const passInput = document.getElementById("passInput");
+  const passBtn = document.getElementById("passBtn");
+  const passError = document.getElementById("passError");
+
+  const SESSION_KEY = "msgs_unlocked_9v";
+
+  async function checkPassword(value) {
+    const snap = await getDoc(doc(db, "PASS", "main"));
+    if (!snap.exists()) return false;
+    const correct = snap.data().value;
+    return String(value) === String(correct);
+  }
+
+  async function tryUnlock() {
+    const value = passInput.value.trim();
+    if (!value) return;
+    passBtn.disabled = true;
+    passBtn.textContent = "Tekshirilmoqda...";
+    passError.textContent = "";
+    try {
+      const ok = await checkPassword(value);
+      if (ok) {
+        sessionStorage.setItem(SESSION_KEY, "1");
+        lockScreen.style.display = "none";
+        appScreen.style.display = "block";
+        initApp();
+      } else {
+        passError.textContent = "Parol noto'g'ri.";
+        passInput.value = "";
+        passInput.focus();
+      }
+    } catch (err) {
+      passError.textContent = "Xatolik: " + err.message;
+    } finally {
+      passBtn.disabled = false;
+      passBtn.textContent = "Kirish";
+    }
+  }
+
+  passBtn.addEventListener("click", tryUnlock);
+  passInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+
+  if (sessionStorage.getItem(SESSION_KEY) === "1") {
+    lockScreen.style.display = "none";
+    appScreen.style.display = "block";
+    initApp();
+  } else {
+    passInput.focus();
+  }
+
+  function initApp() {
 
   const listEl = document.getElementById("list");
   const countEl = document.getElementById("count");
@@ -155,19 +209,21 @@
 
   onSnapshot(q, (snapshot) => {
     skeletonEl.style.display = "none";
-    allDocs = snapshot.docs.map(doc => {
-      const data = doc.data();
+    allDocs = snapshot.docs.map(docSnap => {
+      const data = docSnap.data();
       let createdAtStr = "";
       if (data.createdAt && data.createdAt.toDate) {
         createdAtStr = data.createdAt.toDate().toLocaleString("uz-UZ", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
       }
-      return { id: doc.id, ...data, createdAtStr };
+      return { id: docSnap.id, ...data, createdAtStr };
     });
     render(searchEl.value);
   }, (err) => {
     skeletonEl.style.display = "none";
     listEl.innerHTML = `<p style="color:#d93025;">Xatolik: ${err.message}</p>`;
   });
+
+  } // end initApp
 </script>
 
 <style>
@@ -422,9 +478,87 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+
+  .lock-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .lock-box {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    max-width: 340px;
+    width: 100%;
+    padding: 32px 26px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(20,20,50,0.08);
+  }
+  .lock-icon { font-size: 34px; margin-bottom: 10px; }
+  .lock-box h2 {
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--text);
+  }
+  .lock-box p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+  #passInput {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.05em;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  #passInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(76,111,255,0.12);
+  }
+  .lock-error {
+    color: #d93025;
+    font-size: 12.5px;
+    min-height: 16px;
+    margin-top: 8px;
+  }
+  #passBtn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  #passBtn:hover { background: #3f5fee; }
+  #passBtn:disabled { opacity: 0.6; cursor: default; }
 </style>
 </head>
 <body>
+
+<div class="lock-wrap" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <h2>Kirish uchun parol</h2>
+    <p>Bu sahifa faqat sinf rahbari uchun. Davom etish uchun parolni kiriting.</p>
+    <input type="password" id="passInput" placeholder="Parol" autocomplete="off">
+    <div class="lock-error" id="passError"></div>
+    <button type="button" id="passBtn">Kirish</button>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none;">
 
 <header>
   <div class="title-row">
@@ -448,6 +582,8 @@
 </div>
 <div id="empty">Hozircha hech qanday ma'lumot tushmagan.</div>
 <div id="toast"></div>
+
+</div>
 
 </body>
 </html>

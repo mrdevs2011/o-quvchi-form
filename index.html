@@ -991,8 +991,37 @@
     font-size: 14px;
     line-height: 1.6;
     color: #444;
-    margin: 0 0 20px;
+    margin: 0 0 16px;
   }
+  .modal-faq {
+    text-align: left;
+    background: #f6f7fb;
+    border-radius: 14px;
+    padding: 4px 14px;
+    margin-bottom: 20px;
+  }
+  .faq-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e7e9f0;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 3px;
+  }
+  .faq-a {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+  }
+  .faq-a a {
+    color: #4c6fff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .faq-a a:hover { text-decoration: underline; }
   .modal-close {
     position: absolute;
     top: 12px;
@@ -1183,6 +1212,22 @@
         olinmoqda va faqat sinf rahbariga, jadvalni to'liq qilish maqsadida
         yetkaziladi.
       </p>
+      <div class="modal-faq">
+        <div class="faq-item">
+          <div class="faq-q">Ma'lumotlar qancha vaqt saqlanadi?</div>
+          <div class="faq-a">Xavfsiz saqlanadi va o'chirilmaydi.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">To'ldirish majburiymi?</div>
+          <div class="faq-a">Ha, jadval to'liq bo'lishi uchun barcha ota-onalardan so'ralmoqda. Ma'lumot qanchalik tez kelsa, shunchalik tez yakunlaymiz.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Savol yoki shikoyat bo'lsa-chi?</div>
+          <div class="faq-a">
+            <a href="https://t.me/maktab7v2011" target="_blank" rel="noopener">9-"V" sinf guruhi</a>ga yozing.
+          </div>
+        </div>
+      </div>
       <button type="button" class="modal-ok" id="infoModalOk">Tushunarli</button>
     </div>
   </div>
