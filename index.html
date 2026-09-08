@@ -255,7 +255,7 @@
 
     // Tezlik: blok qancha uzun bo'lsa, shuncha sekin (bir xil "oqim tezligi"
     // hissi bo'lishi uchun) — lekin min/max chegara bilan.
-    const seconds = Math.min(60, Math.max(18, namesForBlock.length * 2.4));
+    const seconds = Math.min(180, Math.max(54, namesForBlock.length * 7.2)); // 3x sekin (edi: 60/18/2.4)
     track.style.animationDuration = seconds + "s";
   }
 
@@ -740,7 +740,7 @@
     display: flex;
     gap: 8px;
     width: max-content;
-    animation: scrollNames 24s linear infinite;
+    animation: scrollNames 72s linear infinite;
   }
   .marquee-track.is-static {
     animation: none;
