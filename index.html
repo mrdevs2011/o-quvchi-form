@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9-V sinf o'quvchisi ma'lumotlari</title>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAVUpLzABT8o_-kDspxCVaAO3CMPUZII04",
+    authDomain: "malumnotalr.firebaseapp.com",
+    projectId: "malumnotalr",
+    storageBucket: "malumnotalr.firebasestorage.app",
+    messagingSenderId: "573521817927",
+    appId: "1:573521817927:web:96bd83130dd1afe1c89c62"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const form = document.getElementById("studentForm");
+  const statusEl = document.getElementById("status");
+  const submitBtn = document.getElementById("submitBtn");
+  const fullNameInput = document.getElementById("fullName");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    statusEl.textContent = "Yuborilmoqda...";
+    statusEl.className = "status info";
+
+    try {
+      const fullName = fullNameInput.value.trim();
+      if (!fullName) {
+        statusEl.textContent = "❌ Iltimos, ismingizni tanlang.";
+        statusEl.className = "status error";
+        submitBtn.disabled = false;
+        return;
+      }
+      const address = document.getElementById("address").value.trim();
+      const parentInfo = document.getElementById("parentInfo").value.trim();
+      const documentInfo = document.getElementById("documentInfo").value.trim();
+
+      statusEl.textContent = "Ma'lumotlar saqlanmoqda...";
+
+      await addDoc(collection(db, "oquvchilar"), {
+        fullName,
+        address,
+        parentInfo,
+        documentInfo,
+        createdAt: serverTimestamp()
+      });
+
+      statusEl.textContent = "✅ Ma'lumotlar muvaffaqiyatli yuborildi. Rahmat!";
+      statusEl.className = "status success";
+      form.reset();
+      fullNameInput.value = "";
+      fullNameLabel.textContent = "Ismingizni tanlang";
+      fullNameBox.classList.add("placeholder");
+      fullNameDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "❌ Xatolik yuz berdi: " + err.message;
+      statusEl.className = "status error";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: #f2f4f7;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    background: #fff;
+    max-width: 520px;
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    padding: 28px 24px;
+  }
+  h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+    color: #1a1a2e;
+  }
+  p.subtitle {
+    color: #666;
+    font-size: 13px;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 14px 0 6px;
+    color: #333;
+  }
+  input[type="text"],
+  input[type="date"],
+  input[type="tel"],
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d7dce3;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus {
+    border-color: #4c8bf5;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input[type="file"] {
+    width: 100%;
+    padding: 8px 0;
+    font-size: 13px;
+  }
+  button {
+    margin-top: 22px;
+    width: 100%;
+    background: #4c8bf5;
+    color: #fff;
+    border: none;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: #3b73d6; }
+  button:disabled { background: #a9c2ec; cursor: not-allowed; }
+  .status {
+    margin-top: 14px;
+    font-size: 14px;
+    text-align: center;
+    min-height: 18px;
+  }
+  .status.info { color: #4c8bf5; }
+  .status.success { color: #1e8e3e; font-weight: 600; }
+  .status.error { color: #d93025; font-weight: 600; }
+  .required { color: #d93025; }
+
+  .select-wrap { position: relative; }
+  .select-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d7dce3;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #fff;
+    color: #333;
+  }
+  .select-box.placeholder { color: #999; }
+  .select-box:focus, .select-box.open {
+    border-color: #4c8bf5;
+    outline: none;
+  }
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d7dce3;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    z-index: 10;
+    overflow: hidden;
+  }
+  .dropdown.show { display: block; }
+  .option {
+    padding: 11px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .option:hover { background: #f2f6ff; }
+  .option.selected { background: #eaf1ff; font-weight: 600; color: #1a56db; }
+  .option .check { color: #4c8bf5; font-weight: bold; visibility: hidden; }
+  .option.selected .check { visibility: visible; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>9-V sinf o'quvchisi ma'lumotlari</h1>
+  <p class="subtitle">Iltimos, quyidagi maydonlarni to'liq va aniq to'ldiring.</p>
+
+  <form id="studentForm">
+    <label>F.I.Sh (to'liq) <span class="required">*</span></label>
+    <div class="select-wrap">
+      <div class="select-box placeholder" id="fullNameBox" tabindex="0">
+        <span id="fullNameLabel">Ismingizni tanlang</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="dropdown" id="fullNameDropdown">
+        <div class="option" data-value="Абдурахимова Зулайхо Камолиддин Қизи">Абдурахимова Зулайхо Камолиддин Қизи</div>
+        <div class="option" data-value="Абдухалилова Шукрона Акрамжон Қизи">Абдухалилова Шукрона Акрамжон Қизи</div>
+        <div class="option" data-value="Алиханова Муқаддасхон Хасанбой Қизи">Алиханова Муқаддасхон Хасанбой Қизи</div>
+        <div class="option" data-value="Ахмадалиев Муҳаммадризо Давронбек Ўғли">Ахмадалиев Муҳаммадризо Давронбек Ўғли</div>
+        <div class="option" data-value="Ахмаджонов Абдуллоҳ Уткирбек Ўғли">Ахмаджонов Абдуллоҳ Уткирбек Ўғли</div>
+        <div class="option" data-value="Ахмадзулунов Абдуназар Адхамжон Ўғли">Ахмадзулунов Абдуназар Адхамжон Ўғли</div>
+        <div class="option" data-value="Ашурбоев Саиджалол Азизбек Ўғли">Ашурбоев Саиджалол Азизбек Ўғли</div>
+        <div class="option" data-value="Бегижонова Робияхон Солохидин Қизи">Бегижонова Робияхон Солохидин Қизи</div>
+        <div class="option" data-value="Боходиржонова Сожидахон Бунёдбек Қизи">Боходиржонова Сожидахон Бунёдбек Қизи</div>
+        <div class="option" data-value="Зиёхитдинова Ойша Оятилло Қизи">Зиёхитдинова Ойша Оятилло Қизи</div>
+        <div class="option" data-value="Ибрагимова Шохсанам Иззатбек Қизи">Ибрагимова Шохсанам Иззатбек Қизи</div>
+        <div class="option" data-value="Қобилжонова Моҳларойим Мухсинжон Қизи">Қобилжонова Моҳларойим Мухсинжон Қизи</div>
+        <div class="option" data-value="Қодиржонов Муҳаммад Али Санжарбек Ўғли">Қодиржонов Муҳаммад Али Санжарбек Ўғли</div>
+        <div class="option" data-value="Қосимов Муҳаммадрасул Хабибулло Ўғли">Қосимов Муҳаммадрасул Хабибулло Ўғли</div>
+        <div class="option" data-value="Мадаминхўжаева Мунисахон Азизбек Қизи">Мадаминхўжаева Мунисахон Азизбек Қизи</div>
+        <div class="option" data-value="Маъруфжонов Набижон Шухратбек Ўғли">Маъруфжонов Набижон Шухратбек Ўғли</div>
+        <div class="option" data-value="Мухторжонова Ойдиноя Абдушукур Қизи">Мухторжонова Ойдиноя Абдушукур Қизи</div>
+        <div class="option" data-value="Низамов Муҳаммадазиз Мухиддин Ўғли">Низамов Муҳаммадазиз Мухиддин Ўғли</div>
+        <div class="option" data-value="Одилжонов Убайдулло Хасанбой Ўғли">Одилжонов Убайдулло Хасанбой Ўғли</div>
+        <div class="option" data-value="Рафиқжонов Абдулборий Шерзодбек Ўғли">Рафиқжонов Абдулборий Шерзодбек Ўғли</div>
+        <div class="option" data-value="Рафиқжонов Абдурахмон Бекзодбек Ўғли">Рафиқжонов Абдурахмон Бекзодбек Ўғли</div>
+        <div class="option" data-value="Собиров Муҳаммад Содиқ Шокиржон Ўғли">Собиров Муҳаммад Содиқ Шокиржон Ўғли</div>
+        <div class="option" data-value="Тўлқинбоев Абдуллоҳ Акмалжон Ўғли">Тўлқинбоев Абдуллоҳ Акмалжон Ўғли</div>
+        <div class="option" data-value="Тўлқинбоева Ойшахон Сирожидин Қизи">Тўлқинбоева Ойшахон Сирожидин Қизи</div>
+        <div class="option" data-value="Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли">Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли</div>
+        <div class="option" data-value="Ўктамова Шириной Хакимбек Қизи">Ўктамова Шириной Хакимбек Қизи</div>
+        <div class="option" data-value="Яқубжонов Мўминжон Бобиржон Ўғли">Яқубжонов Мўминжон Бобиржон Ўғли</div>
+      </div>
+      <input type="hidden" id="fullName" required>
+    </div>
+
+    <label>Yashash manzili (to'liq yoziladi) <span class="required">*</span></label>
+    <textarea id="address" placeholder="Viloyat, tuman, mahalla, ko'cha, uy raqami" required></textarea>
+
+    <label>Ota-onasining F.I.Sh va ma'lumoti <span class="required">*</span></label>
+    <textarea id="parentInfo" placeholder="Otasi: F.I.Sh, ish joyi / Onasi: F.I.Sh, ish joyi" required></textarea>
+
+    <label>Pasport yoki metrika ma'lumoti <span class="required">*</span></label>
+    <input type="text" id="documentInfo" placeholder="Seriya va raqam yoki metrika raqami" required>
+
+    <button type="submit" id="submitBtn">Yuborish</button>
+    <div class="status" id="status"></div>
+  </form>
+</div>
+
+</body>
+</html>
