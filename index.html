@@ -329,6 +329,10 @@
     document.getElementById("motherName").value = "";
     document.getElementById("metrikaNumber").value = "";
     document.getElementById("metrikaNumber").classList.remove("filled");
+    document.querySelectorAll("#otpBoxes .otp-box").forEach(b => {
+      b.value = "";
+      b.classList.remove("filled");
+    });
     showScreen(0);
   });
 
@@ -412,11 +416,48 @@
       if (e.key && /[0-9]/.test(e.key)) e.preventDefault();
     });
   }
-  onlyDigits(numberEl, 7);
-  onlyDigits(houseEl, 6);
+  onlyDigits(houseEl, 3);
   onlyLetters(streetEl);
   onlyLetters(fatherEl);
   onlyLetters(motherEl);
+
+  const otpBoxes = Array.from(document.querySelectorAll("#otpBoxes .otp-box"));
+  function syncOtpToHidden() {
+    const value = otpBoxes.map(b => b.value).join("");
+    numberEl.value = value;
+    numberEl.classList.toggle("filled", value.length === 7);
+  }
+  otpBoxes.forEach((box, i) => {
+    box.addEventListener("input", () => {
+      box.value = box.value.replace(/\D/g, "").slice(0, 1);
+      box.classList.toggle("filled", box.value.length === 1);
+      if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+      syncOtpToHidden();
+    });
+    box.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !box.value && i > 0) {
+        otpBoxes[i - 1].focus();
+        otpBoxes[i - 1].value = "";
+        otpBoxes[i - 1].classList.remove("filled");
+        syncOtpToHidden();
+      }
+      if (e.key === "ArrowLeft" && i > 0) otpBoxes[i - 1].focus();
+      if (e.key === "ArrowRight" && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+    });
+    box.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "").slice(0, otpBoxes.length);
+      text.split("").forEach((ch, idx) => {
+        if (otpBoxes[idx]) {
+          otpBoxes[idx].value = ch;
+          otpBoxes[idx].classList.add("filled");
+        }
+      });
+      const next = otpBoxes[Math.min(text.length, otpBoxes.length - 1)];
+      if (next) next.focus();
+      syncOtpToHidden();
+    });
+  });
 
   document.querySelectorAll(".place-card").forEach(card => {
     card.addEventListener("click", () => {
@@ -722,33 +763,35 @@
     user-select: none;
     height: 76px;
   }
-  .doc-number {
+  .otp-boxes {
     flex: 1;
+    display: flex;
+    gap: 6px;
+  }
+  .otp-box {
+    flex: 1;
+    min-width: 0;
     height: 76px;
-    font-size: 24px;
-    letter-spacing: 0.1em;
+    font-size: 26px;
     font-weight: 700;
     text-align: center;
     border: 2.5px solid #3a3a3a !important;
-    border-radius: 18px !important;
+    border-radius: 14px !important;
     background: #eef1f4 !important;
     color: #222;
     box-shadow: none !important;
-    padding: 0 6px;
+    padding: 0;
   }
-  .doc-number:focus {
+  .otp-box:focus {
     border-color: #3a3a3a !important;
     background: #e8ecef !important;
     box-shadow: none !important;
+    outline: none;
   }
-  .doc-number.filled {
+  .otp-box.filled {
     border-color: #3a3a3a !important;
     background: #e8ecef !important;
     box-shadow: none !important;
-  }
-  .doc-number::placeholder {
-    color: #b5bcc4;
-    letter-spacing: 0.18em;
   }
   .ok {
     width: 78px;
@@ -937,7 +980,7 @@
     <h1 class="ask" id="houseAsk">Uy raqami nechchi?</h1>
     <p class="say say-left">Faqat uy raqamini yozing.</p>
     <label>Uy raqami</label>
-    <input type="text" id="house" placeholder="Masalan: 12" inputmode="numeric">
+    <input type="text" id="house" placeholder="Masalan: 12" inputmode="numeric" maxlength="3">
   </div>
 
   <div class="screen" id="step-parent">
@@ -961,7 +1004,16 @@
     <label>Metrika raqami</label>
     <div class="doc-row">
       <div class="doc-series">AA</div>
-      <input type="text" id="metrikaNumber" class="doc-number" placeholder="_______ " maxlength="7" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+      <div class="otp-boxes" id="otpBoxes">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+      </div>
+      <input type="text" id="metrikaNumber" class="doc-number" maxlength="7" style="display:none">
     </div>
   </div>
 
