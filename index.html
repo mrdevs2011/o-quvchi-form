@@ -233,6 +233,10 @@
     track.style.animationDuration = seconds + "s";
   }
 
+  // 1) "oquvchilar" dan taken-name tekshiruvi — bu admin/login talab qiladigan
+  // yopiq collection, shuning uchun anonim (login qilmagan) foydalanuvchi uchun
+  // bu o'qish odatda RAD ETILADI. Xato bo'lsa ham forma ishlashda davom etadi —
+  // faqat "band ism belgilash" funksiyasi ishlamay qoladi, bu kutilgan holat.
   try {
     const q = query(collection(db, "oquvchilar"));
     onSnapshot(q, (snap) => {
@@ -240,6 +244,20 @@
         snap.docs.map(d => (d.data().fullName || "").trim()).filter(Boolean)
       );
       markTakenOptions();
+    }, () => {
+      // Ruxsat yo'q — bu normal, chunki oquvchilar collection'i yopiq.
+      // Marquee bunga bog'liq emas, pastda alohida ishlaydi.
+    });
+  } catch (e) {
+    // e'tiborsiz qoldiramiz — taken-check ixtiyoriy funksiya
+  }
+
+  // 2) "lenta" dan marquee — bu ATAYLAB OCHIQ collection (faqat ism saqlanadi,
+  // rules'da "allow read: if true"), shuning uchun login qilmagan foydalanuvchi
+  // uchun ham ishlashi SHART. Welcome page bu queryga bog'liq bo'lib qoladi.
+  try {
+    const lentaQ = query(collection(db, "lenta"));
+    onSnapshot(lentaQ, (snap) => {
       const unique = [];
       const seen = new Set();
       snap.docs.forEach(d => {
@@ -427,6 +445,19 @@
         documentInfo,
         createdAt: serverTimestamp()
       });
+
+      // Welcome page'dagi ochiq lenta uchun — faqat ism, shaxsiy ma'lumot yo'q.
+      // Bu alohida yozish, chunki "lenta" collection'i hammaga o'qiladigan
+      // qilib ochilgan (rules'da), "oquvchilar" esa yopiq qoladi.
+      try {
+        await addDoc(collection(db, "lenta"), {
+          fullName,
+          createdAt: serverTimestamp()
+        });
+      } catch (lentaErr) {
+        // Lenta yozuvi muvaffaqiyatsiz bo'lsa ham, asosiy forma
+        // yuborilgani muhim — bu yerda foydalanuvchini to'xtatmaymiz.
+      }
 
       const n = firstNameLatin(fullName);
       document.getElementById("successText").textContent = n
