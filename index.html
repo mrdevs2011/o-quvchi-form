@@ -485,77 +485,144 @@
 </script>
 
 <style>
+  :root {
+    --ink: #1c2b24;
+    --ink-soft: #5b6b62;
+    --ink-faint: #8b978f;
+    --paper: #faf8f2;
+    --card: #ffffff;
+    --line: #e4ded0;
+    --line-soft: #ece7db;
+    --field: #f6f3e9;
+    --pine: #1f4d3e;
+    --pine-dark: #163a2f;
+    --pine-tint: #eaf1ec;
+    --gold: #b8863c;
+    --gold-tint: #faf3e4;
+    --danger: #b23a3a;
+    --shadow-1: 0 1px 2px rgba(28, 43, 36, 0.04);
+    --shadow-2: 0 12px 32px rgba(28, 43, 36, 0.10), 0 2px 8px rgba(28, 43, 36, 0.05);
+  }
+
   * { box-sizing: border-box; }
+
   body {
     font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
-    background:
-      radial-gradient(circle at 12% 8%, rgba(91,79,217,0.10), transparent 42%),
-      radial-gradient(circle at 88% 92%, rgba(91,79,217,0.08), transparent 40%),
-      #f4f2fb;
+    background: var(--paper);
+    background-image:
+      linear-gradient(180deg, var(--pine) 0%, var(--pine) 120px, transparent 120px),
+      radial-gradient(circle at 15% 0%, rgba(184,134,60,0.06), transparent 45%);
     margin: 0;
     min-height: 100vh;
     min-height: 100dvh;
-    padding: 16px 12px 28px;
+    padding: 40px 16px 40px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    color: #211f36;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
   }
-  .card {
-    background: #fff;
-    max-width: 500px;
+
+  :focus-visible {
+    outline: 2.5px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  .page {
     width: 100%;
-    border-radius: 26px;
-    box-shadow: 0 18px 44px rgba(53, 40, 130, 0.10), 0 2px 8px rgba(53, 40, 130, 0.05);
-    border: 1px solid #eeecf9;
-    padding: 26px 20px 22px;
-    margin-top: 8px;
+    max-width: 480px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #eef3ee;
+    margin: 0 2px 18px;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+  .brand-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .brand-text span {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: rgba(238,243,238,0.68);
+    margin-top: 1px;
+  }
+
+  .card {
+    background: var(--card);
+    width: 100%;
+    border-radius: 22px;
+    box-shadow: var(--shadow-2);
+    border: 1px solid var(--line-soft);
+    padding: 30px 24px 24px;
     overflow: visible;
   }
   .screen { display: none; }
-  .screen.active { display: block; animation: fadeIn 0.32s ease; }
+  .screen.active { display: block; animation: fadeIn 0.36s cubic-bezier(.2,.7,.3,1); }
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   .emoji {
-    width: 68px;
-    height: 68px;
-    border-radius: 22px;
-    background: linear-gradient(150deg, #efebfe, #f7f5ff);
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: var(--pine-tint);
+    border: 1px solid #d9e6dd;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
-    margin: 4px auto 18px;
+    font-size: 26px;
+    margin: 2px auto 20px;
   }
+
   h1 {
     font-family: 'Fraunces', Georgia, serif;
     font-optical-sizing: auto;
-    font-size: 25px;
+    font-size: 24px;
     margin: 0 0 10px;
-    color: #1a1830;
+    color: var(--ink);
     text-align: center;
-    line-height: 1.32;
+    line-height: 1.3;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
   .ask {
     text-align: left;
-    font-size: 24px;
+    font-size: 22px;
   }
   p.say {
-    color: #635f7d;
+    color: var(--ink-soft);
     font-size: 15px;
-    margin: 0 0 22px;
+    margin: 0 0 24px;
     text-align: center;
     line-height: 1.65;
   }
-  .say-left { text-align: left; margin-bottom: 18px; }
+  .say-left { text-align: left; margin-bottom: 20px; }
 
   .marquee-wrap {
-    margin: 0 -8px 22px;
+    margin: 0 -8px 24px;
     overflow: hidden;
     mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
@@ -563,23 +630,23 @@
   .marquee-label {
     text-align: center;
     font-size: 12px;
-    color: #9b96b8;
+    color: var(--ink-faint);
     margin-bottom: 10px;
   }
   .marquee-track {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     width: max-content;
     animation: scrollNames 24s linear infinite;
   }
   .pill {
     flex: 0 0 auto;
-    padding: 8px 14px;
+    padding: 7px 13px;
     border-radius: 999px;
-    background: #f7f5ff;
-    border: 1px solid #ebe7fa;
-    color: #4b4768;
-    font-size: 13px;
+    background: var(--pine-tint);
+    border: 1px solid #d9e6dd;
+    color: var(--pine-dark);
+    font-size: 12.5px;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -587,255 +654,279 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
 
   label {
     display: block;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     margin: 0 0 8px;
-    color: #736e91;
+    color: var(--ink-soft);
+    letter-spacing: 0.01em;
   }
   input[type="text"] {
     width: 100%;
     padding: 13px 14px;
-    border: 1.5px solid #e6e3f2;
-    border-radius: 13px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
     font-size: 16px;
     outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     font-family: inherit;
-    background: #faf9fd;
+    background: var(--field);
+    color: var(--ink);
   }
+  input[type="text"]::placeholder { color: var(--ink-faint); }
   input:focus {
-    border-color: #8a7ff0;
-    box-shadow: 0 0 0 4px rgba(91,79,217,0.14);
+    border-color: var(--pine);
+    box-shadow: 0 0 0 4px rgba(31,77,62,0.10);
     background: #fff;
   }
 
   button {
     width: 100%;
-    background: #5b4fd9;
+    background: var(--pine);
     color: #fff;
     border: none;
     padding: 14px;
     font-size: 15px;
     font-weight: 600;
-    border-radius: 13px;
+    border-radius: 12px;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
+    font-family: inherit;
   }
-  button:hover { background: #4739c2; }
+  button:hover { background: var(--pine-dark); }
   button:active { transform: scale(0.985); }
-  button:disabled { background: #c3bdf0; cursor: not-allowed; }
+  button:disabled { background: #b9c4bd; cursor: not-allowed; }
   .soft {
-    background: #f4f2fb;
-    color: #423d5c;
+    background: var(--field);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
   }
-  .soft:hover { background: #e9e5f6; }
+  .soft:hover { background: #efeada; }
 
   .nav {
     display: none;
     gap: 10px;
-    margin-top: 16px;
+    margin-top: 18px;
   }
   .nav .back {
-    width: 36%;
-    background: #f4f2fb;
-    color: #423d5c;
+    width: 34%;
+    background: var(--field);
+    color: var(--ink);
+    border: 1.5px solid var(--line);
     visibility: hidden;
   }
-  .nav .back:hover { background: #e9e5f6; }
+  .nav .back:hover { background: #efeada; }
   .nav .next, .nav .submit { flex: 1; }
   #submitBtn { display: none; }
 
   .status-error {
     min-height: 0;
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 13px;
-    color: #c4544c;
+    color: var(--danger);
     text-align: center;
+    line-height: 1.5;
   }
 
-  .progress-wrap { display: none; margin-bottom: 22px; }
-
-  .boot {
-    width: 100%;
-    max-width: 500px;
-    background: #fff;
-    border-radius: 26px;
-    box-shadow: 0 18px 44px rgba(53, 40, 130, 0.10);
-    border: 1px solid #eeecf9;
-    padding: 56px 24px;
-    margin-top: 10px;
-    text-align: center;
-    color: #8b86a3;
-    font-size: 14px;
-  }
-  .boot-spin {
-    width: 36px;
-    height: 36px;
-    border: 3px solid #ece9f8;
-    border-top-color: #5b4fd9;
-    border-radius: 50%;
-    margin: 0 auto 14px;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-wrap { display: none; margin-bottom: 24px; }
   .progress-bar {
-    height: 4px;
-    background: #ece9f8;
+    height: 5px;
+    background: var(--line-soft);
     border-radius: 99px;
     overflow: hidden;
   }
   .progress-fill {
     height: 100%;
     width: 0%;
-    background: #8a7ff0;
+    background: var(--pine);
     border-radius: 99px;
-    transition: width 0.28s ease;
+    transition: width 0.3s ease;
   }
+
+  .boot {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border-radius: 22px;
+    box-shadow: var(--shadow-2);
+    border: 1px solid var(--line-soft);
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+  .boot-spin {
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--line-soft);
+    border-top-color: var(--pine);
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .select-wrap { position: relative; }
   .select-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     width: 100%;
     padding: 13px 14px;
-    border: 1.5px solid #e6e3f2;
-    border-radius: 13px;
-    font-size: 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font-size: 14.5px;
     cursor: pointer;
-    background: #faf9fd;
-    color: #333;
+    background: var(--field);
+    color: var(--ink);
     min-height: 50px;
   }
-  .select-box.placeholder { color: #a29cbb; }
-  .select-box.open { border-color: #8a7ff0; background: #fff; }
+  .select-box svg { flex-shrink: 0; transition: transform 0.15s; }
+  .select-box.open svg { transform: rotate(180deg); }
+  .select-box #fullNameLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .select-box.placeholder { color: var(--ink-faint); }
+  .select-box.open { border-color: var(--pine); background: #fff; }
   .dropdown {
     display: none;
     position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
     margin-top: 8px;
     background: #fff;
-    border: 1.5px solid #e6e3f2;
-    border-radius: 13px;
-    box-shadow: 0 10px 26px rgba(53, 40, 130, 0.10);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow-2);
     z-index: 10;
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: calc(6 * 44px);
+    max-height: 260px;
     -webkit-overflow-scrolling: touch;
   }
   .dropdown.show { display: block; }
   .option {
     padding: 12px 14px;
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 1.35;
     min-height: 44px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
+    border-bottom: 1px solid var(--line-soft);
   }
-  .option:hover { background: #f7f5ff; }
-  .option.selected { background: #efebfe; font-weight: 600; color: #4739c2; }
-  .option .check { color: #5b4fd9; font-weight: bold; visibility: hidden; flex-shrink: 0; }
+  .option:last-child { border-bottom: none; }
+  .option .opt-name { flex: 1; min-width: 0; }
+  .option:hover { background: var(--pine-tint); }
+  .option.selected { background: var(--pine-tint); font-weight: 600; color: var(--pine-dark); }
+  .option .check { color: var(--pine); font-weight: bold; visibility: hidden; flex-shrink: 0; }
   .option.selected .check { visibility: visible; }
   .option.taken {
-    background: #f6f5fa;
-    color: #b3aecb;
+    background: #f7f5ef;
+    color: var(--ink-faint);
     cursor: not-allowed;
     pointer-events: none;
   }
-  .option.taken:hover { background: #f6f5fa; }
+  .option.taken:hover { background: #f7f5ef; }
   .option.taken .opt-name { text-decoration: line-through; }
   .option.taken .check { display: none; }
   .taken-tag {
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #a29cbb;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
     flex-shrink: 0;
+    background: var(--line-soft);
+    padding: 3px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
   }
 
   .doc-row {
     display: flex;
     align-items: stretch;
-    gap: 12px;
+    gap: 10px;
   }
   .doc-series {
-    width: 92px;
-    flex: 0 0 92px;
+    width: 64px;
+    flex: 0 0 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2.5px solid #2f2b45;
-    border-radius: 18px;
-    background: #f2effa;
-    color: #2f2b45;
-    font-size: 28px;
+    border: 2px solid var(--pine);
+    border-radius: 14px;
+    background: var(--pine-tint);
+    color: var(--pine-dark);
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     user-select: none;
-    height: 76px;
+    height: 62px;
   }
   .otp-boxes {
     flex: 1;
     display: flex;
     gap: 6px;
+    min-width: 0;
   }
   .otp-box {
     flex: 1;
     min-width: 0;
-    height: 76px;
-    font-size: 26px;
+    height: 62px;
+    font-size: 21px;
     font-weight: 700;
     text-align: center;
-    border: 2.5px solid #2f2b45 !important;
-    border-radius: 14px !important;
-    background: #f2effa !important;
-    color: #2f2b45;
+    border: 2px solid var(--line) !important;
+    border-radius: 12px !important;
+    background: var(--field) !important;
+    color: var(--ink);
     box-shadow: none !important;
     padding: 0;
   }
   .otp-box:focus {
-    border-color: #5b4fd9 !important;
+    border-color: var(--pine) !important;
     background: #fff !important;
-    box-shadow: 0 0 0 4px rgba(91,79,217,0.14) !important;
+    box-shadow: 0 0 0 4px rgba(31,77,62,0.10) !important;
     outline: none;
   }
   .otp-box.filled {
-    border-color: #2f2b45 !important;
-    background: #ece7fa !important;
+    border-color: var(--pine) !important;
+    background: var(--pine-tint) !important;
     box-shadow: none !important;
   }
+
   .ok {
-    width: 78px;
-    height: 78px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    background: #e6f7ee;
-    color: #1f9d6e;
+    background: var(--pine-tint);
+    color: var(--pine);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    margin: 8px auto 16px;
+    font-size: 30px;
+    margin: 4px auto 18px;
+    border: 1px solid #d9e6dd;
   }
+
   .place-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .place-card, .mini-card {
-    border: 1.5px solid #e6e3f2;
-    background: #faf9fd;
-    border-radius: 15px;
+    border: 1.5px solid var(--line);
+    background: var(--field);
+    border-radius: 14px;
     padding: 14px 12px;
     cursor: pointer;
     text-align: left;
@@ -843,64 +934,55 @@
   }
   button.place-card {
     width: 100%;
-    background: #faf9fd;
-    color: #1a1830;
+    background: var(--field);
+    color: var(--ink);
     margin-top: 0;
   }
-  button.place-card:hover { background: #f2effa; border-color: #ddd7f2; }
+  button.place-card:hover { background: #efeada; border-color: #d9d2bd; }
   .place-card {
-    min-height: 88px;
+    min-height: 82px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
   }
-  .place-card .ttl { font-weight: 800; color: #1a1830; font-size: 20px; }
-  .place-card .sub { font-size: 12px; color: #8b86a3; margin-top: 4px; font-weight: 500; }
+  .place-card .ttl { font-weight: 700; color: var(--ink); font-size: 17px; letter-spacing: 0.01em; }
+  .place-card .sub { font-size: 12px; color: var(--ink-faint); margin-top: 4px; font-weight: 500; }
   .place-card.on {
-    border-color: #5b4fd9;
-    background: #f2effa;
-    box-shadow: 0 0 0 3px rgba(91,79,217,0.14);
+    border-color: var(--pine);
+    background: var(--pine-tint);
+    box-shadow: 0 0 0 3px rgba(31,77,62,0.10);
   }
-  .place-card.wide { grid-column: 1 / -1; }
-  .hint-box {
-    background: #f4f2fb;
-    border-radius: 13px;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: #635f7d;
-    margin-bottom: 14px;
-    line-height: 1.5;
-  }
+  .place-card.on .ttl { color: var(--pine-dark); }
+
   .mini-card {
     cursor: default;
     margin-bottom: 10px;
     padding: 14px;
   }
   .mini-card .who {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 700;
-    color: #4b4768;
+    color: var(--ink-soft);
     margin-bottom: 8px;
   }
 
   @media (min-width: 640px) {
-    body { padding: 28px 20px 40px; }
-    .card { padding: 32px 26px 24px; margin-top: 12px; }
+    body { padding: 56px 20px; }
+    .card { padding: 36px 30px 26px; }
     h1 { font-size: 26px; }
-    .ask { font-size: 25px; }
+    .ask { font-size: 24px; }
   }
   @media (max-width: 380px) {
-    .card { padding: 20px 14px 16px; border-radius: 20px; }
-    h1 { font-size: 21px; }
-    .ask { font-size: 20px; }
-    .place-card .ttl { font-size: 16px; }
+    .card { padding: 22px 16px 18px; border-radius: 18px; }
+    h1 { font-size: 20px; }
+    .ask { font-size: 19px; }
+    .place-card .ttl { font-size: 15px; }
     .nav { flex-wrap: wrap; }
     .nav .back { width: 100%; }
+    .doc-series { width: 52px; flex-basis: 52px; font-size: 19px; }
+    .otp-box { font-size: 17px; }
   }
 
   .warn-banner {
@@ -914,20 +996,17 @@
     gap: 10px;
     max-width: 420px;
     width: calc(100% - 24px);
-    background: #fff8e9;
-    border: 1.5px solid #f0c869;
-    color: #6e4f00;
+    background: var(--gold-tint);
+    border: 1.5px solid #e3c98c;
+    color: #6b4d1a;
     padding: 12px 16px;
-    border-radius: 14px;
+    border-radius: 13px;
     font-size: 13px;
     line-height: 1.45;
-    box-shadow: 0 10px 28px rgba(154, 111, 0, 0.16);
+    box-shadow: 0 10px 28px rgba(107, 77, 26, 0.14);
     animation: warnIn 0.5s cubic-bezier(.2,.9,.3,1.2) both;
   }
-  .warn-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-  }
+  .warn-icon { font-size: 17px; flex-shrink: 0; }
   .warn-text b { font-weight: 800; color: #4f3900; }
   @keyframes warnIn {
     from { transform: translateX(-50%) translateY(16px); opacity: 0; }
@@ -938,27 +1017,29 @@
   }
   @media (max-width: 380px) {
     .warn-banner { font-size: 12px; padding: 10px 13px; bottom: 12px; }
-    .warn-icon { font-size: 16px; }
+    .warn-icon { font-size: 15px; }
   }
 
   .info-link {
     display: block;
-    margin: 14px auto 0;
+    margin: 16px auto 0;
     background: none;
     border: none;
-    color: #5b4fd9;
+    color: var(--pine);
     font-size: 13.5px;
     font-weight: 600;
     text-decoration: underline;
+    text-underline-offset: 2px;
     cursor: pointer;
     padding: 6px;
+    width: auto;
   }
-  .info-link:hover { color: #4739c2; }
+  .info-link:hover { color: var(--pine-dark); background: none; }
 
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(26, 21, 46, 0.5);
+    background: rgba(28, 43, 36, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -968,70 +1049,46 @@
     transition: opacity .18s;
     padding: 20px;
   }
-  .modal-overlay.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
   .modal-box {
     background: #fff;
-    border-radius: 22px;
+    border-radius: 20px;
     max-width: 380px;
     width: 100%;
-    padding: 28px 24px 24px;
+    padding: 26px 22px 22px;
     position: relative;
     text-align: center;
-    box-shadow: 0 24px 64px rgba(26, 21, 46, 0.28);
+    box-shadow: 0 24px 64px rgba(28, 21, 12, 0.24);
     transform: translateY(10px) scale(0.97);
     transition: transform .18s;
   }
-  .modal-overlay.show .modal-box {
-    transform: translateY(0) scale(1);
-  }
-  .modal-icon {
-    font-size: 34px;
-    margin-bottom: 8px;
-  }
+  .modal-overlay.show .modal-box { transform: translateY(0) scale(1); }
+  .modal-icon { font-size: 30px; margin-bottom: 8px; }
   .modal-box h2 {
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 600;
-    font-size: 19px;
+    font-size: 18px;
     margin: 0 0 10px;
-    color: #1a1830;
+    color: var(--ink);
   }
   .modal-box p {
     font-size: 14px;
     line-height: 1.6;
-    color: #4a4560;
+    color: var(--ink-soft);
     margin: 0 0 16px;
   }
   .modal-faq {
     text-align: left;
-    background: #f7f5fb;
-    border-radius: 15px;
+    background: var(--field);
+    border-radius: 13px;
     padding: 4px 14px;
     margin-bottom: 20px;
   }
-  .faq-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #e6e3f2;
-  }
+  .faq-item { padding: 12px 0; border-bottom: 1px solid var(--line); }
   .faq-item:last-child { border-bottom: none; }
-  .faq-q {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a1830;
-    margin-bottom: 3px;
-  }
-  .faq-a {
-    font-size: 13px;
-    color: #635f7d;
-    line-height: 1.5;
-  }
-  .faq-a a {
-    color: #5b4fd9;
-    font-weight: 600;
-    text-decoration: none;
-  }
+  .faq-q { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+  .faq-a { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .faq-a a { color: var(--pine); font-weight: 600; text-decoration: none; }
   .faq-a a:hover { text-decoration: underline; }
   .modal-close {
     position: absolute;
@@ -1041,214 +1098,221 @@
     height: 30px;
     border-radius: 50%;
     border: none;
-    background: #f4f2fb;
-    color: #635f7d;
-    font-size: 14px;
+    background: var(--field);
+    color: var(--ink-soft);
+    font-size: 13px;
     cursor: pointer;
   }
-  .modal-close:hover { background: #e9e5f6; }
+  .modal-close:hover { background: #efeada; }
   .modal-ok {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 13px;
-    background: #5b4fd9;
+    border-radius: 12px;
+    background: var(--pine);
     color: #fff;
     font-size: 14.5px;
     font-weight: 700;
     cursor: pointer;
   }
-  .modal-ok:hover { background: #4739c2; }
+  .modal-ok:hover { background: var(--pine-dark); }
 </style>
 </head>
 <body>
 
-<div class="boot" id="boot">
-  <div class="boot-spin"></div>
-  Bir daqiqa...
-</div>
-
-<div class="warn-banner" id="warnBanner">
-  <span class="warn-icon">⚠️</span>
-  <span class="warn-text">Iltimos, faqat <b>to‘g‘ri va aniq</b> ma’lumot kiriting. Noto‘g‘ri ma’lumot kiritish qat’iyan man etiladi.</span>
-</div>
-
-<div class="card" id="appCard" hidden>
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="page">
+  <div class="brand">
+    <div class="brand-mark">9V</div>
+    <div class="brand-text">9-"V" sinf<span>O'quvchi ma'lumotlari</span></div>
   </div>
 
-  <div class="screen" id="welcome">
-    <div class="emoji">🌸</div>
-    <h1>Assalomu alaykum</h1>
-    <p class="say">
-      Sizni bezovta qilganimiz uchun oldindan uzr.
-      9-V sinf ota-onalaridan bir-ikki narsani so‘ramoqchimiz xolos.
-      Qiyin emas, sekin-sekin gaplashib olamiz.
-    </p>
-    <div class="marquee-wrap" id="marqueeWrap" hidden>
-      <div class="marquee-label">Allaqachon yozilganlar</div>
-      <div class="marquee-track" id="marqueeTrack"></div>
+  <div class="boot" id="boot">
+    <div class="boot-spin"></div>
+    Bir daqiqa...
+  </div>
+
+  <div class="warn-banner" id="warnBanner">
+    <span class="warn-icon">⚠️</span>
+    <span class="warn-text">Iltimos, faqat <b>to‘g‘ri va aniq</b> ma’lumot kiriting. Noto‘g‘ri ma’lumot kiritish qat’iyan man etiladi.</span>
+  </div>
+
+  <div class="card" id="appCard" hidden>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     </div>
-    <button type="button" id="startBtn">Mayli, gaplashaylik</button>
-  </div>
 
-  <div class="screen" id="step-child">
-    <h1 class="ask">Farzandingiz 9-V da o‘qiydimi?</h1>
-    <p class="say say-left">
-      Bo‘lsa, ismini ro‘yxatdan belgilab qo‘ying. Boshqa hech narsa hozircha kerak emas.
-    </p>
-    <label>Farzandingiz</label>
-    <div class="select-wrap">
-      <div class="select-box placeholder" id="fullNameBox" tabindex="0">
-        <span id="fullNameLabel">Ismini tanlang</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="dropdown" id="fullNameDropdown">
-        <div class="option" data-value="Абдурахимова Зулайхо Камолиддин Қизи">Абдурахимова Зулайхо Камолиддин Қизи</div>
-        <div class="option" data-value="Абдухалилова Шукрона Акрамжон Қизи">Абдухалилова Шукрона Акрамжон Қизи</div>
-        <div class="option" data-value="Алиханова Муқаддасхон Хасанбой Қизи">Алиханова Муқаддасхон Хасанбой Қизи</div>
-        <div class="option" data-value="Ахмадалиев Муҳаммадризо Давронбек Ўғли">Ахмадалиев Муҳаммадризо Давронбек Ўғли</div>
-        <div class="option" data-value="Ахмаджонов Абдуллоҳ Уткирбек Ўғли">Ахмаджонов Абдуллоҳ Уткирбек Ўғли</div>
-        <div class="option" data-value="Ахмадзулунов Абдуназар Адхамжон Ўғли">Ахмадзулунов Абдуназар Адхамжон Ўғли</div>
-        <div class="option" data-value="Ашурбоев Саиджалол Азизбек Ўғли">Ашурбоев Саиджалол Азизбек Ўғли</div>
-        <div class="option" data-value="Бегижонова Робияхон Солохидин Қизи">Бегижонова Робияхон Солохидин Қизи</div>
-        <div class="option" data-value="Боходиржонова Сожидахон Бунёдбек Қизи">Боходиржонова Сожидахон Бунёдбек Қизи</div>
-        <div class="option" data-value="Зиёхитдинова Ойша Оятилло Қизи">Зиёхитдинова Ойша Оятилло Қизи</div>
-        <div class="option" data-value="Ибрагимова Шохсанам Иззатбек Қизи">Ибрагимова Шохсанам Иззатбек Қизи</div>
-        <div class="option" data-value="Қобилжонова Моҳларойим Мухсинжон Қизи">Қобилжонова Моҳларойим Мухсинжон Қизи</div>
-        <div class="option" data-value="Қодиржонов Муҳаммад Али Санжарбек Ўғли">Қодиржонов Муҳаммад Али Санжарбек Ўғли</div>
-        <div class="option" data-value="Қосимов Муҳаммадрасул Хабибулло Ўғли">Қосимов Муҳаммадрасул Хабибулло Ўғли</div>
-        <div class="option" data-value="Мадаминхўжаева Мунисахон Азизбек Қизи">Мадаминхўжаева Мунисахон Азизбек Қизи</div>
-        <div class="option" data-value="Маъруфжонов Набижон Шухратбек Ўғли">Маъруфжонов Набижон Шухратбек Ўғли</div>
-        <div class="option" data-value="Мухторжонова Ойдиноя Абдушукур Қизи">Мухторжонова Ойдиноя Абдушукур Қизи</div>
-        <div class="option" data-value="Низамов Муҳаммадазиз Мухиддин Ўғли">Низамов Муҳаммадазиз Мухиддин Ўғли</div>
-        <div class="option" data-value="Одилжонов Убайдулло Хасанбой Ўғли">Одилжонов Убайдулло Хасанбой Ўғли</div>
-        <div class="option" data-value="Рафиқжонов Абдулборий Шерзодбек Ўғли">Рафиқжонов Абдулборий Шерзодбек Ўғли</div>
-        <div class="option" data-value="Рафиқжонов Абдурахмон Бекзодбек Ўғли">Рафиқжонов Абдурахмон Бекзодбек Ўғли</div>
-        <div class="option" data-value="Собиров Муҳаммад Содиқ Шокиржон Ўғли">Собиров Муҳаммад Содиқ Шокиржон Ўғли</div>
-        <div class="option" data-value="Тўлқинбоев Абдуллоҳ Акмалжон Ўғли">Тўлқинбоев Абдуллоҳ Акмалжон Ўғли</div>
-        <div class="option" data-value="Тўлқинбоева Ойшахон Сирожидин Қизи">Тўлқинбоева Ойшахон Сирожидин Қизи</div>
-        <div class="option" data-value="Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли">Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли</div>
-        <div class="option" data-value="Ўктамова Шириной Хакимбек Қизи">Ўктамова Шириной Хакимбек Қизи</div>
-        <div class="option" data-value="Яқубжонов Мўминжон Бобиржон Ўғли">Яқубжонов Мўминжон Бобиржон Ўғли</div>
-      </div>
-      <input type="hidden" id="fullName">
-    </div>
-  </div>
-
-  <div class="screen" id="step-mfy">
-    <h1 class="ask" id="mfyAsk">Qaysi MFYdansiz?</h1>
-    <p class="say say-left">Oltinko‘l tumani. Ikkitadan birini bosing.</p>
-    <div class="place-grid">
-      <button type="button" class="place-card" data-mfy="Sadda">
-        <div class="ttl">SADDA</div>
-        <div class="sub">MFY</div>
-      </button>
-      <button type="button" class="place-card" data-mfy="Komakay">
-        <div class="ttl">Komakay</div>
-        <div class="sub">MFY</div>
-      </button>
-    </div>
-    <input type="hidden" id="mfy">
-  </div>
-
-  <div class="screen" id="step-street">
-    <h1 class="ask" id="streetAsk">Qaysi ko‘chada yashaysiz?</h1>
-    <p class="say say-left">Ko‘cha nomini yozing.</p>
-    <label>Ko‘cha</label>
-    <input type="text" id="street" placeholder="Masalan: Mustaqillik">
-  </div>
-
-  <div class="screen" id="step-house">
-    <h1 class="ask" id="houseAsk">Uy raqami nechchi?</h1>
-    <p class="say say-left">Faqat uy raqamini yozing.</p>
-    <label>Uy raqami</label>
-    <input type="text" id="house" placeholder="Masalan: 12" inputmode="numeric" maxlength="3">
-  </div>
-
-  <div class="screen" id="step-parent">
-    <h1 class="ask" id="parentAsk">Ota va onasining ismini yozamiz</h1>
-    <p class="say say-left">Har birini alohida, to‘liq F.I.Sh bilan.</p>
-    <div class="mini-card">
-      <div class="who">Otasi</div>
-      <input type="text" id="fatherName" placeholder="Otasi: F.I.Sh">
-    </div>
-    <div class="mini-card">
-      <div class="who">Onasi</div>
-      <input type="text" id="motherName" placeholder="Onasi: F.I.Sh">
-    </div>
-  </div>
-
-  <div class="screen" id="step-document">
-    <h1 class="ask" id="docAsk">Farzandingizning metrikasi bormi?</h1>
-    <p class="say say-left">
-      Tug‘ilganlik haqidagi guvohnoma: 2 ta harf va 7 ta raqam. Shu bilan tugaymiz.
-    </p>
-    <label>Metrika raqami</label>
-    <div class="doc-row">
-      <div class="doc-series">AA</div>
-      <div class="otp-boxes" id="otpBoxes">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-        <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
-      </div>
-      <input type="text" id="metrikaNumber" class="doc-number" maxlength="7" style="display:none">
-    </div>
-  </div>
-
-  <div class="screen" id="success">
-    <div class="ok">✓</div>
-    <h1>Rahmat, bo‘ldi</h1>
-    <p class="say" id="successText">
-      Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.
-    </p>
-    <button type="button" id="againBtn" class="soft">Boshqa farzand bo‘lsa</button>
-    <button type="button" id="infoBtn" class="info-link">Biz ma'lumotlarni nima qilamiz?</button>
-  </div>
-
-  <div class="modal-overlay" id="infoModal">
-    <div class="modal-box">
-      <button type="button" class="modal-close" id="infoModalClose" aria-label="Yopish">✕</button>
-      <div class="modal-icon">📋</div>
-      <h2>Ma'lumotlar nima uchun kerak?</h2>
-      <p>
-        Ushbu ma'lumotlar sinf rahbari tomonidan tuzilayotgan maktab jadvalini
-        to'ldirish uchun ishlatiladi. Jadvalda o'quvchilar haqida ba'zi
-        ma'lumotlar yetishmay qolgani sababli, ular shu forma orqali yig'ib
-        olinmoqda va faqat sinf rahbariga, jadvalni to'liq qilish maqsadida
-        yetkaziladi.
+    <div class="screen" id="welcome">
+      <div class="emoji">🌸</div>
+      <h1>Assalomu alaykum</h1>
+      <p class="say">
+        Sizni bezovta qilganimiz uchun oldindan uzr.
+        9-V sinf ota-onalaridan bir-ikki narsani so‘ramoqchimiz xolos.
+        Qiyin emas, sekin-sekin gaplashib olamiz.
       </p>
-      <div class="modal-faq">
-        <div class="faq-item">
-          <div class="faq-q">Ma'lumotlar qancha vaqt saqlanadi?</div>
-          <div class="faq-a">Xavfsiz saqlanadi va o'chirilmaydi.</div>
+      <div class="marquee-wrap" id="marqueeWrap" hidden>
+        <div class="marquee-label">Allaqachon yozilganlar</div>
+        <div class="marquee-track" id="marqueeTrack"></div>
+      </div>
+      <button type="button" id="startBtn">Mayli, gaplashaylik</button>
+    </div>
+
+    <div class="screen" id="step-child">
+      <h1 class="ask">Farzandingiz 9-V da o‘qiydimi?</h1>
+      <p class="say say-left">
+        Bo‘lsa, ismini ro‘yxatdan belgilab qo‘ying. Boshqa hech narsa hozircha kerak emas.
+      </p>
+      <label>Farzandingiz</label>
+      <div class="select-wrap">
+        <div class="select-box placeholder" id="fullNameBox" tabindex="0">
+          <span id="fullNameLabel">Ismini tanlang</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#5b6b62" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">To'ldirish majburiymi?</div>
-          <div class="faq-a">Ha, jadval to'liq bo'lishi uchun barcha ota-onalardan so'ralmoqda. Ma'lumot qanchalik tez kelsa, shunchalik tez yakunlaymiz.</div>
+        <div class="dropdown" id="fullNameDropdown">
+          <div class="option" data-value="Абдурахимова Зулайхо Камолиддин Қизи">Абдурахимова Зулайхо Камолиддин Қизи</div>
+          <div class="option" data-value="Абдухалилова Шукрона Акрамжон Қизи">Абдухалилова Шукрона Акрамжон Қизи</div>
+          <div class="option" data-value="Алиханова Муқаддасхон Хасанбой Қизи">Алиханова Муқаддасхон Хасанбой Қизи</div>
+          <div class="option" data-value="Ахмадалиев Муҳаммадризо Давронбек Ўғли">Ахмадалиев Муҳаммадризо Давронбек Ўғли</div>
+          <div class="option" data-value="Ахмаджонов Абдуллоҳ Уткирбек Ўғли">Ахмаджонов Абдуллоҳ Уткирбек Ўғли</div>
+          <div class="option" data-value="Ахмадзулунов Абдуназар Адхамжон Ўғли">Ахмадзулунов Абдуназар Адхамжон Ўғли</div>
+          <div class="option" data-value="Ашурбоев Саиджалол Азизбек Ўғли">Ашурбоев Саиджалол Азизбек Ўғли</div>
+          <div class="option" data-value="Бегижонова Робияхон Солохидин Қизи">Бегижонова Робияхон Солохидин Қизи</div>
+          <div class="option" data-value="Боходиржонова Сожидахон Бунёдбек Қизи">Боходиржонова Сожидахон Бунёдбек Қизи</div>
+          <div class="option" data-value="Зиёхитдинова Ойша Оятилло Қизи">Зиёхитдинова Ойша Оятилло Қизи</div>
+          <div class="option" data-value="Ибрагимова Шохсанам Иззатбек Қизи">Ибрагимова Шохсанам Иззатбек Қизи</div>
+          <div class="option" data-value="Қобилжонова Моҳларойим Мухсинжон Қизи">Қобилжонова Моҳларойим Мухсинжон Қизи</div>
+          <div class="option" data-value="Қодиржонов Муҳаммад Али Санжарбек Ўғли">Қодиржонов Муҳаммад Али Санжарбек Ўғли</div>
+          <div class="option" data-value="Қосимов Муҳаммадрасул Хабибулло Ўғли">Қосимов Муҳаммадрасул Хабибулло Ўғли</div>
+          <div class="option" data-value="Мадаминхўжаева Мунисахон Азизбек Қизи">Мадаминхўжаева Мунисахон Азизбек Қизи</div>
+          <div class="option" data-value="Маъруфжонов Набижон Шухратбек Ўғли">Маъруфжонов Набижон Шухратбек Ўғли</div>
+          <div class="option" data-value="Мухторжонова Ойдиноя Абдушукур Қизи">Мухторжонова Ойдиноя Абдушукур Қизи</div>
+          <div class="option" data-value="Низамов Муҳаммадазиз Мухиддин Ўғли">Низамов Муҳаммадазиз Мухиддин Ўғли</div>
+          <div class="option" data-value="Одилжонов Убайдулло Хасанбой Ўғли">Одилжонов Убайдулло Хасанбой Ўғли</div>
+          <div class="option" data-value="Рафиқжонов Абдулборий Шерзодбек Ўғли">Рафиқжонов Абдулборий Шерзодбек Ўғли</div>
+          <div class="option" data-value="Рафиқжонов Абдурахмон Бекзодбек Ўғли">Рафиқжонов Абдурахмон Бекзодбек Ўғли</div>
+          <div class="option" data-value="Собиров Муҳаммад Содиқ Шокиржон Ўғли">Собиров Муҳаммад Содиқ Шокиржон Ўғли</div>
+          <div class="option" data-value="Тўлқинбоев Абдуллоҳ Акмалжон Ўғли">Тўлқинбоев Абдуллоҳ Акмалжон Ўғли</div>
+          <div class="option" data-value="Тўлқинбоева Ойшахон Сирожидин Қизи">Тўлқинбоева Ойшахон Сирожидин Қизи</div>
+          <div class="option" data-value="Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли">Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли</div>
+          <div class="option" data-value="Ўктамова Шириной Хакимбек Қизи">Ўктамова Шириной Хакимбек Қизи</div>
+          <div class="option" data-value="Яқубжонов Мўминжон Бобиржон Ўғли">Яқубжонов Мўминжон Бобиржон Ўғли</div>
         </div>
-        <div class="faq-item">
-          <div class="faq-q">Savol yoki shikoyat bo'lsa-chi?</div>
-          <div class="faq-a">
-            <a href="https://t.me/maktab7v2011" target="_blank" rel="noopener">9-"V" sinf guruhi</a>ga yozing.
+        <input type="hidden" id="fullName">
+      </div>
+    </div>
+
+    <div class="screen" id="step-mfy">
+      <h1 class="ask" id="mfyAsk">Qaysi MFYdansiz?</h1>
+      <p class="say say-left">Oltinko‘l tumani. Ikkitadan birini bosing.</p>
+      <div class="place-grid">
+        <button type="button" class="place-card" data-mfy="Sadda">
+          <div class="ttl">SADDA</div>
+          <div class="sub">MFY</div>
+        </button>
+        <button type="button" class="place-card" data-mfy="Komakay">
+          <div class="ttl">Komakay</div>
+          <div class="sub">MFY</div>
+        </button>
+      </div>
+      <input type="hidden" id="mfy">
+    </div>
+
+    <div class="screen" id="step-street">
+      <h1 class="ask" id="streetAsk">Qaysi ko‘chada yashaysiz?</h1>
+      <p class="say say-left">Ko‘cha nomini yozing.</p>
+      <label>Ko‘cha</label>
+      <input type="text" id="street" placeholder="Masalan: Mustaqillik">
+    </div>
+
+    <div class="screen" id="step-house">
+      <h1 class="ask" id="houseAsk">Uy raqami nechchi?</h1>
+      <p class="say say-left">Faqat uy raqamini yozing.</p>
+      <label>Uy raqami</label>
+      <input type="text" id="house" placeholder="Masalan: 12" inputmode="numeric" maxlength="3">
+    </div>
+
+    <div class="screen" id="step-parent">
+      <h1 class="ask" id="parentAsk">Ota va onasining ismini yozamiz</h1>
+      <p class="say say-left">Har birini alohida, to‘liq F.I.Sh bilan.</p>
+      <div class="mini-card">
+        <div class="who">Otasi</div>
+        <input type="text" id="fatherName" placeholder="Otasi: F.I.Sh">
+      </div>
+      <div class="mini-card">
+        <div class="who">Onasi</div>
+        <input type="text" id="motherName" placeholder="Onasi: F.I.Sh">
+      </div>
+    </div>
+
+    <div class="screen" id="step-document">
+      <h1 class="ask" id="docAsk">Farzandingizning metrikasi bormi?</h1>
+      <p class="say say-left">
+        Tug‘ilganlik haqidagi guvohnoma: 2 ta harf va 7 ta raqam. Shu bilan tugaymiz.
+      </p>
+      <label>Metrika raqami</label>
+      <div class="doc-row">
+        <div class="doc-series">AA</div>
+        <div class="otp-boxes" id="otpBoxes">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+          <input type="text" class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off">
+        </div>
+        <input type="text" id="metrikaNumber" class="doc-number" maxlength="7" style="display:none">
+      </div>
+    </div>
+
+    <div class="screen" id="success">
+      <div class="ok">✓</div>
+      <h1>Rahmat, bo‘ldi</h1>
+      <p class="say" id="successText">
+        Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.
+      </p>
+      <button type="button" id="againBtn" class="soft">Boshqa farzand bo‘lsa</button>
+      <button type="button" id="infoBtn" class="info-link">Biz ma'lumotlarni nima qilamiz?</button>
+    </div>
+
+    <div class="modal-overlay" id="infoModal">
+      <div class="modal-box">
+        <button type="button" class="modal-close" id="infoModalClose" aria-label="Yopish">✕</button>
+        <div class="modal-icon">📋</div>
+        <h2>Ma'lumotlar nima uchun kerak?</h2>
+        <p>
+          Ushbu ma'lumotlar sinf rahbari tomonidan tuzilayotgan maktab jadvalini
+          to'ldirish uchun ishlatiladi. Jadvalda o'quvchilar haqida ba'zi
+          ma'lumotlar yetishmay qolgani sababli, ular shu forma orqali yig'ib
+          olinmoqda va faqat sinf rahbariga, jadvalni to'liq qilish maqsadida
+          yetkaziladi.
+        </p>
+        <div class="modal-faq">
+          <div class="faq-item">
+            <div class="faq-q">Ma'lumotlar qancha vaqt saqlanadi?</div>
+            <div class="faq-a">Xavfsiz saqlanadi va o'chirilmaydi.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">To'ldirish majburiymi?</div>
+            <div class="faq-a">Ha, jadval to'liq bo'lishi uchun barcha ota-onalardan so'ralmoqda. Ma'lumot qanchalik tez kelsa, shunchalik tez yakunlaymiz.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Savol yoki shikoyat bo'lsa-chi?</div>
+            <div class="faq-a">
+              <a href="https://t.me/maktab7v2011" target="_blank" rel="noopener">9-"V" sinf guruhi</a>ga yozing.
+            </div>
           </div>
         </div>
+        <button type="button" class="modal-ok" id="infoModalOk">Tushunarli</button>
       </div>
-      <button type="button" class="modal-ok" id="infoModalOk">Tushunarli</button>
     </div>
-  </div>
 
-  <div class="status-error" id="stepError"></div>
+    <div class="status-error" id="stepError"></div>
 
-  <div class="nav" id="nav">
-    <button type="button" class="back" id="backBtn">Orqaga</button>
-    <button type="button" class="next" id="nextBtn">Keyingisi</button>
-    <button type="button" class="submit" id="submitBtn">Tayyor</button>
+    <div class="nav" id="nav">
+      <button type="button" class="back" id="backBtn">Orqaga</button>
+      <button type="button" class="next" id="nextBtn">Keyingisi</button>
+      <button type="button" class="submit" id="submitBtn">Tayyor</button>
+    </div>
   </div>
 </div>
 
