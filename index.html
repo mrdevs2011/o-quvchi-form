@@ -16,7 +16,7 @@
     const fullNameInput = document.getElementById("fullName");
 
     fullNameDropdown.querySelectorAll(".option").forEach(opt => {
-      opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="check">✓</span>`;
+      opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19.5 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
       opt.addEventListener("click", (e) => {
         if (opt.classList.contains("taken")) {
           e.stopPropagation();
@@ -827,7 +827,7 @@
   .option .opt-name { flex: 1; min-width: 0; }
   .option:hover { background: var(--pine-tint); }
   .option.selected { background: var(--pine-tint); font-weight: 600; color: var(--pine-dark); }
-  .option .check { color: var(--pine); font-weight: bold; visibility: hidden; flex-shrink: 0; }
+  .option .check { color: var(--pine); display: inline-flex; visibility: hidden; flex-shrink: 0; }
   .option.selected .check { visibility: visible; }
   .option.taken {
     background: #f7f5ef;
@@ -1132,7 +1132,7 @@
   </div>
 
   <div class="warn-banner" id="warnBanner">
-    <span class="warn-icon">⚠️</span>
+    <span class="warn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3.5L22 20.5H2L12 3.5Z" stroke="#6b4d1a" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10V14.2" stroke="#6b4d1a" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="17.3" r="0.9" fill="#6b4d1a"/></svg></span>
     <span class="warn-text">Iltimos, faqat <b>to‘g‘ri va aniq</b> ma’lumot kiriting. Noto‘g‘ri ma’lumot kiritish qat’iyan man etiladi.</span>
   </div>
 
@@ -1142,7 +1142,9 @@
     </div>
 
     <div class="screen" id="welcome">
-      <div class="emoji">🌸</div>
+      <div class="emoji">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 19.5V6.5C4 5.4 4.9 4.5 6 4.5H11C11 4.5 11.5 6.5 11.5 8V19.5" stroke="#1f4d3e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19.5V6.5C20 5.4 19.1 4.5 18 4.5H13C13 4.5 12.5 6.5 12.5 8V19.5" stroke="#1f4d3e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 19.5H21.5" stroke="#1f4d3e" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
       <h1>Assalomu alaykum</h1>
       <p class="say">
         Sizni bezovta qilganimiz uchun oldindan uzr.
@@ -1265,7 +1267,7 @@
     </div>
 
     <div class="screen" id="success">
-      <div class="ok">✓</div>
+      <div class="ok"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19.5 7" stroke="#1f4d3e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <h1>Rahmat, bo‘ldi</h1>
       <p class="say" id="successText">
         Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.
@@ -1276,8 +1278,10 @@
 
     <div class="modal-overlay" id="infoModal">
       <div class="modal-box">
-        <button type="button" class="modal-close" id="infoModalClose" aria-label="Yopish">✕</button>
-        <div class="modal-icon">📋</div>
+        <button type="button" class="modal-close" id="infoModalClose" aria-label="Yopish"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+        <div class="modal-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="5" y="4.5" width="14" height="17" rx="2.2" stroke="#1f4d3e" stroke-width="1.6"/><path d="M9 4V3.5C9 2.7 9.7 2 10.5 2H13.5C14.3 2 15 2.7 15 3.5V4" stroke="#1f4d3e" stroke-width="1.6" stroke-linecap="round"/><path d="M8.5 11H15.5M8.5 14.5H15.5M8.5 18H12.5" stroke="#1f4d3e" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
         <h2>Ma'lumotlar nima uchun kerak?</h2>
         <p>
           Ushbu ma'lumotlar sinf rahbari tomonidan tuzilayotgan maktab jadvalini
