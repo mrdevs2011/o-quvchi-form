@@ -27,173 +27,427 @@
   const countEl = document.getElementById("count");
   const emptyEl = document.getElementById("empty");
   const searchEl = document.getElementById("search");
+  const clearBtn = document.getElementById("clearSearch");
+  const skeletonEl = document.getElementById("skeleton");
+  const toastEl = document.getElementById("toast");
 
   let allDocs = [];
+  let openId = null;
 
-  function render(filterText = "") {
-    const filtered = allDocs.filter(d =>
-      (d.fullName || "").toLowerCase().includes(filterText.toLowerCase())
-    );
+  const AVATAR_COLORS = ["#6366f1", "#ec4899", "#0ea5e9", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#14b8a6"];
 
-    countEl.textContent = `Jami: ${allDocs.length} ta | Ko'rsatilmoqda: ${filtered.length} ta`;
+  function colorFor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  }
 
-    if (filtered.length === 0) {
-      listEl.innerHTML = "";
-      emptyEl.style.display = "block";
-      return;
-    }
-    emptyEl.style.display = "none";
-
-    listEl.innerHTML = filtered.map((d, i) => `
-      <div class="card">
-        <div class="card-body">
-          <h3>${i + 1}. ${escapeHtml(d.fullName || "—")}</h3>
-          <div class="row"><span class="label">Manzil:</span> ${escapeHtml(d.address || "—")}</div>
-          ${d.fatherName || d.motherName ? `
-          <div class="row"><span class="label">Otasi:</span> ${escapeHtml(d.fatherName || "—")}</div>
-          <div class="row"><span class="label">Onasi:</span> ${escapeHtml(d.motherName || "—")}</div>
-          ` : `<div class="row"><span class="label">Ota-ona:</span> ${escapeHtml(d.parentInfo || "—")}</div>`}
-          <div class="row"><span class="label">Metrika:</span> ${escapeHtml(d.documentInfo || "—")}</div>
-          <div class="row time">${d.createdAtStr || ""}</div>
-        </div>
-      </div>
-    `).join("");
+  function initials(name) {
+    const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   function escapeHtml(str) {
     const div = document.createElement("div");
-    div.textContent = str;
+    div.textContent = str || "";
     return div.innerHTML;
   }
 
+  function showToast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove("show"), 1600);
+  }
+
+  window.toggleCard = function (id) {
+    openId = openId === id ? null : id;
+    render(searchEl.value);
+  };
+
+  window.copyText = function (event, text) {
+    event.stopPropagation();
+    navigator.clipboard.writeText(text).then(() => showToast("Nusxalandi ✓"));
+  };
+
+  function render(filterText = "") {
+    const term = filterText.trim().toLowerCase();
+    const filtered = allDocs.filter(d =>
+      (d.fullName || "").toLowerCase().includes(term) ||
+      (d.address || "").toLowerCase().includes(term) ||
+      (d.mfy || "").toLowerCase().includes(term)
+    );
+
+    countEl.textContent = `Jami: ${allDocs.length} ta${term ? ` · Topildi: ${filtered.length} ta` : ""}`;
+    clearBtn.style.display = term ? "flex" : "none";
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = "";
+      emptyEl.style.display = "block";
+      emptyEl.textContent = allDocs.length === 0
+        ? "Hozircha hech qanday ma'lumot tushmagan."
+        : "Hech narsa topilmadi. Boshqa so'z bilan qidiring.";
+      return;
+    }
+    emptyEl.style.display = "none";
+
+    listEl.innerHTML = filtered.map((d, i) => {
+      const name = d.fullName || "—";
+      const isOpen = openId === d.id;
+      const color = colorFor(name);
+      const parentsBlock = (d.fatherName || d.motherName)
+        ? `
+          <div class="detail-row">
+            <span class="detail-icon">👨</span>
+            <div><span class="detail-label">Otasi</span><div class="detail-value">${escapeHtml(d.fatherName || "—")}</div></div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-icon">👩</span>
+            <div><span class="detail-label">Onasi</span><div class="detail-value">${escapeHtml(d.motherName || "—")}</div></div>
+          </div>`
+        : `
+          <div class="detail-row">
+            <span class="detail-icon">👪</span>
+            <div><span class="detail-label">Ota-ona</span><div class="detail-value">${escapeHtml(d.parentInfo || "—")}</div></div>
+          </div>`;
+
+      return `
+      <div class="card ${isOpen ? "open" : ""}" onclick="toggleCard('${d.id}')">
+        <div class="card-head">
+          <div class="avatar" style="background:${color}">${initials(name)}</div>
+          <div class="card-title">
+            <h3>${escapeHtml(name)}</h3>
+            <div class="sub">${escapeHtml(d.mfy || "")} ${d.mfy ? "MFY" : ""}</div>
+          </div>
+          <div class="head-right">
+            <span class="time">${d.createdAtStr || ""}</span>
+            <span class="chevron">⌄</span>
+          </div>
+        </div>
+        <div class="card-details">
+          <div class="detail-row" onclick="copyText(event, '${escapeHtml(d.address || "")}')">
+            <span class="detail-icon">📍</span>
+            <div><span class="detail-label">Manzil</span><div class="detail-value">${escapeHtml(d.address || "—")}</div></div>
+            <span class="copy-hint">nusxa</span>
+          </div>
+          ${parentsBlock}
+          <div class="detail-row" onclick="copyText(event, '${escapeHtml(d.documentInfo || "")}')">
+            <span class="detail-icon">🪪</span>
+            <div><span class="detail-label">Metrika</span><div class="detail-value">${escapeHtml(d.documentInfo || "—")}</div></div>
+            <span class="copy-hint">nusxa</span>
+          </div>
+        </div>
+      </div>
+    `;
+    }).join("");
+  }
+
   searchEl.addEventListener("input", () => render(searchEl.value));
+  clearBtn.addEventListener("click", () => {
+    searchEl.value = "";
+    searchEl.focus();
+    render("");
+  });
 
   const q = query(collection(db, "oquvchilar"), orderBy("createdAt", "desc"));
 
   onSnapshot(q, (snapshot) => {
+    skeletonEl.style.display = "none";
     allDocs = snapshot.docs.map(doc => {
       const data = doc.data();
       let createdAtStr = "";
       if (data.createdAt && data.createdAt.toDate) {
-        createdAtStr = data.createdAt.toDate().toLocaleString("uz-UZ");
+        createdAtStr = data.createdAt.toDate().toLocaleString("uz-UZ", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
       }
       return { id: doc.id, ...data, createdAtStr };
     });
     render(searchEl.value);
   }, (err) => {
+    skeletonEl.style.display = "none";
     listEl.innerHTML = `<p style="color:#d93025;">Xatolik: ${err.message}</p>`;
   });
 </script>
 
 <style>
   * { box-sizing: border-box; }
+  :root {
+    --bg: #f4f5f9;
+    --card: #ffffff;
+    --border: #e7e9f0;
+    --text: #1a1a2e;
+    --muted: #7b8093;
+    --accent: #4c6fff;
+  }
   body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: #f2f4f7;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+    background: var(--bg);
     margin: 0;
-    padding: 20px;
+    padding: 24px 16px 60px;
+    color: var(--text);
   }
   header {
-    max-width: 900px;
-    margin: 0 auto 20px;
+    max-width: 760px;
+    margin: 0 auto 22px;
+  }
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
   }
   h1 {
-    font-size: 22px;
-    color: #1a1a2e;
-    margin-bottom: 4px;
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
   }
   #count {
-    color: #666;
+    color: var(--muted);
     font-size: 13px;
+    font-weight: 500;
+  }
+  .search-wrap {
+    position: relative;
+    margin-top: 14px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 15px;
+    pointer-events: none;
   }
   #search {
-    margin-top: 12px;
     width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #d7dce3;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 12px 40px 12px 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 14.5px;
     outline: none;
+    background: var(--card);
+    transition: border-color .15s, box-shadow .15s;
   }
-  #search:focus { border-color: #4c8bf5; }
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(76,111,255,0.12);
+  }
+  #clearSearch {
+    display: none;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: #eef0f5;
+    color: var(--muted);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  #clearSearch:hover { background: #e2e5ee; }
 
   .container {
-    max-width: 900px;
+    max-width: 760px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
   }
+
+  .skeleton-card {
+    height: 68px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #eceef4 25%, #f6f7fb 37%, #eceef4 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+  }
+
   .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    display: flex;
-    overflow: hidden;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: box-shadow .18s, border-color .18s, transform .12s;
+    animation: fadeIn .28s ease both;
   }
-  .card-photo {
-    width: 110px;
-    min-width: 110px;
-    background: #eef1f5;
+  .card:hover {
+    box-shadow: 0 4px 18px rgba(20,20,50,0.07);
+    border-color: #d8dcec;
+  }
+  .card:active { transform: scale(0.997); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .card-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .no-photo {
-    font-size: 11px;
-    color: #999;
-    text-align: center;
-    padding: 10px;
-  }
-  .card-body {
-    padding: 14px 16px;
+  .card-title {
     flex: 1;
+    min-width: 0;
   }
-  .card-body h3 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    color: #1a1a2e;
+  .card-title h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .row {
-    font-size: 13.5px;
-    color: #333;
-    margin-bottom: 4px;
+  .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .head-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .time {
+    font-size: 11.5px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .chevron {
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1;
+    transition: transform .2s;
+  }
+  .card.open .chevron { transform: rotate(180deg); color: var(--accent); }
+
+  .card-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .25s ease, padding .25s ease;
+    padding: 0 16px;
+  }
+  .card.open .card-details {
+    max-height: 400px;
+    padding: 2px 16px 14px;
+  }
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    transition: background .12s;
+  }
+  .detail-row:hover { background: #f6f7fb; }
+  .detail-icon { font-size: 15px; margin-top: 1px; }
+  .detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .detail-value {
+    font-size: 14px;
+    color: var(--text);
+    margin-top: 1px;
     line-height: 1.4;
   }
-  .row .label {
-    font-weight: 600;
-    color: #555;
+  .copy-hint {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity .12s;
+    align-self: center;
+    flex-shrink: 0;
   }
-  .row.time {
-    margin-top: 8px;
-    font-size: 11.5px;
-    color: #999;
-  }
+  .detail-row:hover .copy-hint { opacity: 1; }
+
   #empty {
     display: none;
     text-align: center;
-    color: #888;
-    padding: 40px 0;
-    max-width: 900px;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 50px 20px;
+    max-width: 760px;
     margin: 0 auto;
+  }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 50;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>9-V sinf — kelgan ma'lumotlar</h1>
-  <div id="count">Yuklanmoqda...</div>
-  <input type="text" id="search" placeholder="F.I.Sh bo'yicha qidirish...">
+  <div class="title-row">
+    <h1>9-V sinf</h1>
+    <span id="count">Yuklanmoqda...</span>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Ism, manzil yoki MFY bo'yicha qidirish...">
+    <button id="clearSearch" type="button" aria-label="Tozalash">✕</button>
+  </div>
 </header>
 
-<div class="container" id="list"></div>
+<div class="container">
+  <div id="skeleton">
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+  </div>
+  <div id="list"></div>
+</div>
 <div id="empty">Hozircha hech qanday ma'lumot tushmagan.</div>
+<div id="toast"></div>
 
 </body>
 </html>
