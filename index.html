@@ -20,12 +20,11 @@
 <meta name="twitter:description" content="Oltinko'l tumani 9-V sinf o'quvchilarining ma'lumotlarini to'ldirish platformasi.">
 
 <script>
-  // Har safar YANGI sessiyada (yangi tab/ilova ochilganda) sahifani
-  // cache-bust query bilan qayta yuklaydi, shu orqali brauzer/CDN
-  // kesh'ini chetlab o'tib har doim eng oxirgi versiyani oladi.
-  // Bir session ichida (forma to'ldirish jarayonida) faqat 1 marta ishlaydi.
-  if (!sessionStorage.getItem('freshLoaded')) {
-    sessionStorage.setItem('freshLoaded', '1');
+  // Har safar sahifa ochilganda (yangi tab ham, oddiy refresh ham) cache-bust
+  // query bilan qayta yuklaydi, shu orqali brauzer/CDN keshini chetlab o'tib
+  // har doim eng oxirgi versiyani oladi. sessionStorage flag orqali cheksiz
+  // reload bo'lib qolishining oldi olinadi (URL'da ?v= bo'lsa qayta yuklamaydi).
+  if (!location.search.includes('v=')) {
     location.replace(location.pathname + '?v=' + Date.now());
   }
 </script>

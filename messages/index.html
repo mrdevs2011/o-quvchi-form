@@ -7,10 +7,9 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-  // Har safar YANGI sessiyada sahifani cache-bust query bilan qayta
+  // Har safar sahifa ochilganda (refresh ham) cache-bust query bilan qayta
   // yuklaydi — brauzer/CDN keshini chetlab o'tib eng oxirgi ma'lumotni oladi.
-  if (!sessionStorage.getItem('freshLoaded')) {
-    sessionStorage.setItem('freshLoaded', '1');
+  if (!location.search.includes('v=')) {
     location.replace(location.pathname + '?v=' + Date.now());
   }
 </script>
@@ -76,12 +75,17 @@
   emailInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
   logoutBtn.addEventListener("click", () => signOut(auth));
 
+  let appInitialized = false;
+
   onAuthStateChanged(auth, (user) => {
     document.getElementById("authLoading").style.display = "none";
     if (user) {
       lockScreen.style.display = "none";
       appScreen.style.display = "block";
-      initApp();
+      if (!appInitialized) {
+        appInitialized = true;
+        initApp();
+      }
     } else {
       lockScreen.style.display = "flex";
       appScreen.style.display = "none";
