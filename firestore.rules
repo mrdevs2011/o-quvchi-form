@@ -11,6 +11,15 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null;
     }
 
+    // "lenta" — welcome page'dagi ochiq marquee uchun. Faqat ism saqlanadi,
+    // shaxsiy ma'lumot yo'q, shuning uchun hammaga o'qishga va yozishga
+    // ruxsat berilgan (login talab qilinmaydi).
+    match /lenta/{docId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
     // Boshqa har qanday collection (shu jumladan eski PASS) —
     // hech kimga, hech qanday holatda ruxsat yo'q.
     match /{document=**} {

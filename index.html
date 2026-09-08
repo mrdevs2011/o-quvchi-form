@@ -177,23 +177,12 @@
     const selected = document.getElementById("fullName").value;
     document.querySelectorAll("#fullNameDropdown .option").forEach(opt => {
       const taken = takenNames.has(opt.dataset.value);
-      opt.classList.toggle("taken", taken);
-      let tag = opt.querySelector(".taken-tag");
-      if (taken) {
-        if (!tag) {
-          tag = document.createElement("span");
-          tag.className = "taken-tag";
-          tag.textContent = "tayyor";
-          opt.appendChild(tag);
-        }
-        if (selected === opt.dataset.value) {
-          opt.classList.remove("selected");
-          document.getElementById("fullName").value = "";
-          document.getElementById("fullNameLabel").textContent = "Ismini tanlang";
-          document.getElementById("fullNameBox").classList.add("placeholder");
-        }
-      } else if (tag) {
-        tag.remove();
+      opt.hidden = taken; // band bo'lgan ism dropdown'dan butunlay yo'qoladi
+      if (taken && selected === opt.dataset.value) {
+        opt.classList.remove("selected");
+        document.getElementById("fullName").value = "";
+        document.getElementById("fullNameLabel").textContent = "Ismini tanlang";
+        document.getElementById("fullNameBox").classList.add("placeholder");
       }
     });
   }
