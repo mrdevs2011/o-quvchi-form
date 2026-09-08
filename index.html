@@ -13,8 +13,12 @@
     const fullNameInput = document.getElementById("fullName");
 
     fullNameDropdown.querySelectorAll(".option").forEach(opt => {
-      opt.innerHTML = `<span>${opt.dataset.value}</span><span class="check">✓</span>`;
-      opt.addEventListener("click", () => {
+      opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="check">✓</span>`;
+      opt.addEventListener("click", (e) => {
+        if (opt.classList.contains("taken")) {
+          e.stopPropagation();
+          return;
+        }
         fullNameDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
         opt.classList.add("selected");
         fullNameInput.value = opt.dataset.value;
@@ -24,8 +28,6 @@
         fullNameBox.classList.remove("open");
         const err = document.getElementById("stepError");
         if (err) err.textContent = "";
-        const greet = document.getElementById("childGreet");
-        if (greet) greet.textContent = "";
       });
     });
 
@@ -47,7 +49,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, addDoc, serverTimestamp
+    getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -64,6 +66,7 @@
 
   const screens = ["welcome", "step-child", "step-address", "step-parent", "step-document", "success"];
   let current = 0;
+  let takenNames = new Set();
 
   const nextBtn = document.getElementById("nextBtn");
   const backBtn = document.getElementById("backBtn");
@@ -75,9 +78,92 @@
   const progressWrap = document.getElementById("progressWrap");
   const nav = document.getElementById("nav");
 
+  function toLatin(str) {
+    const map = {
+      "А":"A","а":"a","Б":"B","б":"b","В":"V","в":"v","Г":"G","г":"g",
+      "Д":"D","д":"d","Е":"E","е":"e","Ё":"Yo","ё":"yo","Ж":"J","ж":"j",
+      "З":"Z","з":"z","И":"I","и":"i","Й":"Y","й":"y","К":"K","к":"k",
+      "Л":"L","л":"l","М":"M","м":"m","Н":"N","н":"n","О":"O","о":"o",
+      "П":"P","п":"p","Р":"R","р":"r","С":"S","с":"s","Т":"T","т":"t",
+      "У":"U","у":"u","Ф":"F","ф":"f","Х":"X","х":"x","Ц":"Ts","ц":"ts",
+      "Ч":"Ch","ч":"ch","Ш":"Sh","ш":"sh","Ъ":"'","ъ":"'","Ь":"","ь":"",
+      "Э":"E","э":"e","Ю":"Yu","ю":"yu","Я":"Ya","я":"ya",
+      "Ў":"O‘","ў":"o‘","Қ":"Q","қ":"q","Ғ":"G‘","ғ":"g‘","Ҳ":"H","ҳ":"h"
+    };
+    return (str || "").split("").map(ch => map[ch] ?? ch).join("");
+  }
+
   function firstName(full) {
     const parts = (full || "").trim().split(/\s+/);
     return parts[1] || parts[0] || "";
+  }
+
+  function firstNameLatin(full) {
+    return toLatin(firstName(full));
+  }
+
+  function markTakenOptions() {
+    const selected = document.getElementById("fullName").value;
+    document.querySelectorAll("#fullNameDropdown .option").forEach(opt => {
+      const taken = takenNames.has(opt.dataset.value);
+      opt.classList.toggle("taken", taken);
+      let tag = opt.querySelector(".taken-tag");
+      if (taken) {
+        if (!tag) {
+          tag = document.createElement("span");
+          tag.className = "taken-tag";
+          tag.textContent = "tayyor";
+          opt.appendChild(tag);
+        }
+        if (selected === opt.dataset.value) {
+          opt.classList.remove("selected");
+          document.getElementById("fullName").value = "";
+          document.getElementById("fullNameLabel").textContent = "Ismini tanlang";
+          document.getElementById("fullNameBox").classList.add("placeholder");
+        }
+      } else if (tag) {
+        tag.remove();
+      }
+    });
+  }
+
+  function renderMarquee(names) {
+    const wrap = document.getElementById("marqueeWrap");
+    const track = document.getElementById("marqueeTrack");
+    if (!names.length) {
+      wrap.hidden = true;
+      track.innerHTML = "";
+      return;
+    }
+    wrap.hidden = false;
+    const pills = names.map(n => `<span class="pill">${n}</span>`).join("");
+    track.innerHTML = pills + pills;
+    const seconds = Math.max(18, names.length * 3.2);
+    track.style.animationDuration = seconds + "s";
+  }
+
+  try {
+    const q = query(collection(db, "oquvchilar"));
+    onSnapshot(q, (snap) => {
+      takenNames = new Set(
+        snap.docs.map(d => (d.data().fullName || "").trim()).filter(Boolean)
+      );
+      markTakenOptions();
+      const unique = [];
+      const seen = new Set();
+      snap.docs.forEach(d => {
+        const latin = firstNameLatin(d.data().fullName || "");
+        if (latin && !seen.has(latin.toLowerCase())) {
+          seen.add(latin.toLowerCase());
+          unique.push(latin);
+        }
+      });
+      renderMarquee(unique);
+    }, () => {
+      document.getElementById("marqueeWrap").hidden = true;
+    });
+  } catch (e) {
+    document.getElementById("marqueeWrap").hidden = true;
   }
 
   function showScreen(index) {
@@ -99,19 +185,19 @@
     }
 
     if (index === 2) {
-      const n = firstName(document.getElementById("fullName").value);
+      const n = firstNameLatin(document.getElementById("fullName").value);
       document.getElementById("addressAsk").textContent = n
         ? `${n} hozir qayerda yashaydi?`
         : "Farzandingiz hozir qayerda yashaydi?";
     }
     if (index === 3) {
-      const n = firstName(document.getElementById("fullName").value);
+      const n = firstNameLatin(document.getElementById("fullName").value);
       document.getElementById("parentAsk").textContent = n
         ? `${n}ning otasi va onasi haqida ham gapirib o‘ting, iltimos.`
         : "Farzandingizning otasi va onasi haqida ham gapirib o‘ting, iltimos.";
     }
     if (index === 4) {
-      const n = firstName(document.getElementById("fullName").value);
+      const n = firstNameLatin(document.getElementById("fullName").value);
       document.getElementById("docAsk").textContent = n
         ? `${n}ning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?`
         : "Farzandingizning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?";
@@ -131,18 +217,33 @@
         stepError.textContent = "Iltimos, avval farzandingizni tanlab qo‘ying.";
         return false;
       }
+      if (takenNames.has(name)) {
+        stepError.textContent = "Bu farzand uchun allaqachon yozilgan.";
+        return false;
+      }
     }
     if (current === 2) {
-      const address = document.getElementById("address").value.trim();
-      if (!address) {
-        stepError.textContent = "Manzilni yozib qo‘ysangiz, rahmat.";
+      const mfy = document.getElementById("mfy").value.trim();
+      const other = document.getElementById("mfyOther").value.trim();
+      const house = document.getElementById("house").value.trim();
+      if (!mfy) {
+        stepError.textContent = "Avval mahallani tanlang: Komakay yoki Sadda.";
+        return false;
+      }
+      if (mfy === "Boshqa" && !other) {
+        stepError.textContent = "Qaysi mahallada yashashingizni yozing.";
+        return false;
+      }
+      if (!house) {
+        stepError.textContent = "Uy raqami yoki ko‘chani yozib qo‘ying.";
         return false;
       }
     }
     if (current === 3) {
-      const parentInfo = document.getElementById("parentInfo").value.trim();
-      if (!parentInfo) {
-        stepError.textContent = "Ota va onaning ismini yozib qo‘ysangiz bo‘ladi.";
+      const father = document.getElementById("fatherName").value.trim();
+      const mother = document.getElementById("motherName").value.trim();
+      if (!father || !mother) {
+        stepError.textContent = "Otasi va onasining ismini alohida yozing.";
         return false;
       }
     }
@@ -172,8 +273,13 @@
     document.getElementById("fullNameLabel").textContent = "Ismini tanlang";
     document.getElementById("fullNameBox").classList.add("placeholder");
     document.getElementById("fullNameDropdown").querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
-    document.getElementById("address").value = "";
-    document.getElementById("parentInfo").value = "";
+    document.getElementById("mfy").value = "";
+    document.getElementById("mfyOther").value = "";
+    document.getElementById("house").value = "";
+    document.getElementById("otherMfyWrap").hidden = true;
+    document.querySelectorAll(".place-card").forEach(c => c.classList.remove("on"));
+    document.getElementById("fatherName").value = "";
+    document.getElementById("motherName").value = "";
     document.getElementById("metrikaSeries").value = "";
     document.getElementById("metrikaNumber").value = "";
     showScreen(0);
@@ -188,8 +294,15 @@
 
     try {
       const fullName = document.getElementById("fullName").value.trim();
-      const address = document.getElementById("address").value.trim();
-      const parentInfo = document.getElementById("parentInfo").value.trim();
+      const mfyRaw = document.getElementById("mfy").value.trim();
+      const mfyName = mfyRaw === "Boshqa"
+        ? document.getElementById("mfyOther").value.trim()
+        : mfyRaw;
+      const house = document.getElementById("house").value.trim();
+      const address = `Andijon viloyati, Oltinko‘l tumani, ${mfyName} MFY, ${house}`;
+      const fatherName = document.getElementById("fatherName").value.trim();
+      const motherName = document.getElementById("motherName").value.trim();
+      const parentInfo = `Otasi: ${fatherName} / Onasi: ${motherName}`;
       const series = document.getElementById("metrikaSeries").value.trim().toUpperCase();
       const number = document.getElementById("metrikaNumber").value.trim();
       const documentInfo = `${series} ${number}`;
@@ -198,11 +311,15 @@
         fullName,
         address,
         parentInfo,
+        fatherName,
+        motherName,
+        mfy: mfyName,
+        house,
         documentInfo,
         createdAt: serverTimestamp()
       });
 
-      const n = firstName(fullName);
+      const n = firstNameLatin(fullName);
       document.getElementById("successText").textContent = n
         ? `Rahmat. ${n} haqida aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.`
         : "Rahmat. Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.";
@@ -236,6 +353,20 @@
       seriesEl.focus();
     }
   });
+
+  document.querySelectorAll(".place-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".place-card").forEach(c => c.classList.remove("on"));
+      card.classList.add("on");
+      document.getElementById("mfy").value = card.dataset.mfy;
+      const otherWrap = document.getElementById("otherMfyWrap");
+      otherWrap.hidden = card.dataset.mfy !== "Boshqa";
+      if (card.dataset.mfy === "Boshqa") {
+        document.getElementById("mfyOther").focus();
+      }
+      stepError.textContent = "";
+    });
+  });
 </script>
 
 <style>
@@ -259,6 +390,7 @@
     box-shadow: 0 10px 30px rgba(40, 60, 90, 0.07);
     padding: 32px 24px 24px;
     margin-top: 10px;
+    overflow: hidden;
   }
   .screen { display: none; }
   .screen.active { display: block; animation: fadeIn 0.32s ease; }
@@ -298,6 +430,42 @@
     line-height: 1.65;
   }
   .say-left { text-align: left; margin-bottom: 18px; }
+
+  .marquee-wrap {
+    margin: 0 -24px 22px;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-label {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #98a2b3;
+    margin-bottom: 10px;
+  }
+  .marquee-track {
+    display: flex;
+    gap: 10px;
+    width: max-content;
+    animation: scrollNames 24s linear infinite;
+  }
+  .pill {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #f3f6fb;
+    border: 1px solid #e8edf5;
+    color: #3d4a5c;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  @keyframes scrollNames {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
 
   label {
     display: block;
@@ -421,9 +589,26 @@
     gap: 8px;
   }
   .option:hover { background: #f5f8ff; }
-  .option.selected { background: #eef4ff; font-weight: 600; color: #2b5fd0; }
+  .option.selected { background: #eef4ff; font-weight: 600; color: #1a56db; }
   .option .check { color: #4c8bf5; font-weight: bold; visibility: hidden; flex-shrink: 0; }
   .option.selected .check { visibility: visible; }
+  .option.taken {
+    background: #f3f4f6;
+    color: #b0b6c0;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .option.taken:hover { background: #f3f4f6; }
+  .option.taken .opt-name { text-decoration: line-through; }
+  .option.taken .check { display: none; }
+  .taken-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #9aa3b0;
+    flex-shrink: 0;
+  }
 
   .doc-row {
     display: flex;
@@ -448,6 +633,7 @@
     letter-spacing: 3px;
     font-weight: 600;
   }
+  .ok {
     width: 78px;
     height: 78px;
     border-radius: 50%;
@@ -458,6 +644,48 @@
     justify-content: center;
     font-size: 36px;
     margin: 8px auto 16px;
+  }
+  .place-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .place-card, .mini-card {
+    border: 1px solid #e2e6ee;
+    background: #fbfcfe;
+    border-radius: 14px;
+    padding: 14px 12px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .place-card .ttl { font-weight: 700; color: #1c2430; font-size: 15px; }
+  .place-card .sub { font-size: 12px; color: #7a8494; margin-top: 4px; }
+  .place-card.on {
+    border-color: #4c8bf5;
+    background: #eef4ff;
+    box-shadow: 0 0 0 3px rgba(76,139,245,0.12);
+  }
+  .place-card.wide { grid-column: 1 / -1; }
+  .hint-box {
+    background: #f3f6fb;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #5b6573;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .mini-card {
+    cursor: default;
+    margin-bottom: 10px;
+    padding: 14px;
+  }
+  .mini-card .who {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3d4a5c;
+    margin-bottom: 8px;
   }
 </style>
 </head>
@@ -476,6 +704,10 @@
       9-V sinf ota-onalaridan bir-ikki narsani so‘ramoqchimiz xolos.
       Qiyin emas, sekin-sekin gaplashib olamiz.
     </p>
+    <div class="marquee-wrap" id="marqueeWrap" hidden>
+      <div class="marquee-label">Allaqachon yozilganlar</div>
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
     <button type="button" id="startBtn">Mayli, gaplashaylik</button>
   </div>
 
@@ -524,21 +756,43 @@
   </div>
 
   <div class="screen" id="step-address">
-    <h1 class="ask" id="addressAsk">Farzandingiz hozir qayerda yashaydi?</h1>
-    <p class="say say-left">
-      Oddiy qilib yozing: qaysi tuman, qaysi mahalla, qaysi uy. Aniqroq bo‘lsa, yaxshi.
-    </p>
-    <label>Yashash joyi</label>
-    <input type="text" id="address" placeholder="Masalan: Farg‘ona viloyati, ... tuman, ... mahalla, ...-uy">
+    <h1 class="ask" id="addressAsk">Farzandingiz qayerda yashaydi?</h1>
+    <p class="say say-left">Sinfimiz asosan Oltinko‘l tumanida yashaydi. Mahallani bosing.</p>
+    <div class="hint-box">Andijon viloyati · Oltinko‘l tumani</div>
+    <div class="place-grid">
+      <div class="place-card" data-mfy="Komakay">
+        <div class="ttl">Komakay MFY</div>
+        <div class="sub">Oltinko‘l tumani</div>
+      </div>
+      <div class="place-card" data-mfy="Sadda">
+        <div class="ttl">Sadda MFY</div>
+        <div class="sub">Oltinko‘l tumani</div>
+      </div>
+      <div class="place-card wide" data-mfy="Boshqa">
+        <div class="ttl">Boshqa mahalla</div>
+        <div class="sub">Komakay yoki Sadda bo‘lmasa</div>
+      </div>
+    </div>
+    <input type="hidden" id="mfy">
+    <div id="otherMfyWrap" hidden>
+      <label>Qaysi mahalla?</label>
+      <input type="text" id="mfyOther" placeholder="Mahalla nomi">
+    </div>
+    <label>Uy / ko‘cha</label>
+    <input type="text" id="house" placeholder="Masalan: 12-uy yoki Mustaqillik 5">
   </div>
 
   <div class="screen" id="step-parent">
-    <h1 class="ask" id="parentAsk">Ota va onasi haqida ham aytib o‘ting</h1>
-    <p class="say say-left">
-      To‘liq ismlari va qayerda ishlashlari kifoya. Qisqa yozsangiz ham bo‘ladi.
-    </p>
-    <label>Ota va ona</label>
-    <input type="text" id="parentInfo" placeholder="Otasi: ...  Onasi: ...">
+    <h1 class="ask" id="parentAsk">Ota va onasining ismini yozamiz</h1>
+    <p class="say say-left">Har birini alohida, to‘liq F.I.Sh bilan.</p>
+    <div class="mini-card">
+      <div class="who">Otasi</div>
+      <input type="text" id="fatherName" placeholder="Otasi: F.I.Sh">
+    </div>
+    <div class="mini-card">
+      <div class="who">Onasi</div>
+      <input type="text" id="motherName" placeholder="Onasi: F.I.Sh">
+    </div>
   </div>
 
   <div class="screen" id="step-document">

@@ -49,7 +49,10 @@
         <div class="card-body">
           <h3>${i + 1}. ${escapeHtml(d.fullName || "—")}</h3>
           <div class="row"><span class="label">Manzil:</span> ${escapeHtml(d.address || "—")}</div>
-          <div class="row"><span class="label">Ota-ona:</span> ${escapeHtml(d.parentInfo || "—")}</div>
+          ${d.fatherName || d.motherName ? `
+          <div class="row"><span class="label">Otasi:</span> ${escapeHtml(d.fatherName || "—")}</div>
+          <div class="row"><span class="label">Onasi:</span> ${escapeHtml(d.motherName || "—")}</div>
+          ` : `<div class="row"><span class="label">Ota-ona:</span> ${escapeHtml(d.parentInfo || "—")}</div>`}
           <div class="row"><span class="label">Metrika:</span> ${escapeHtml(d.documentInfo || "—")}</div>
           <div class="row time">${d.createdAtStr || ""}</div>
         </div>
