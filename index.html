@@ -704,38 +704,50 @@
   .doc-row {
     display: flex;
     align-items: stretch;
-    gap: 10px;
+    gap: 12px;
   }
   .doc-series {
-    width: 72px;
-    flex: 0 0 72px;
+    width: 86px;
+    flex: 0 0 86px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e6ee;
-    border-radius: 12px;
-    background: #f3f5f8;
-    color: #1c2430;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    border: 2.5px solid #3a3a3a;
+    border-radius: 16px;
+    background: #eef1f4;
+    color: #222;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1px;
     user-select: none;
-  }
-  .doc-gap {
-    display: none;
+    height: 64px;
   }
   .doc-number {
     flex: 1;
-    height: 58px;
-    font-size: 22px;
-    letter-spacing: 0.28em;
+    height: 64px;
+    font-size: 26px;
+    letter-spacing: 0.18em;
     font-weight: 700;
     text-align: center;
+    border: 2.5px solid #3a3a3a !important;
+    border-radius: 16px !important;
+    background: #eef1f4 !important;
+    color: #222;
+    box-shadow: none !important;
+  }
+  .doc-number:focus {
+    border-color: #3a3a3a !important;
+    background: #e8ecef !important;
+    box-shadow: none !important;
   }
   .doc-number.filled {
-    border-color: #2f9e57;
-    background: #f3fbf6;
-    box-shadow: 0 0 0 3px rgba(47,158,87,0.12);
+    border-color: #3a3a3a !important;
+    background: #e8ecef !important;
+    box-shadow: none !important;
+  }
+  .doc-number::placeholder {
+    color: #b5bcc4;
+    letter-spacing: 0.18em;
   }
   .ok {
     width: 78px;
