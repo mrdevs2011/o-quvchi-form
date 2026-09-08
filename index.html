@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>9-V sinf o'quvchisi ma'lumotlari</title>
+<title>9-V sinf</title>
 
-<!-- Firebase SDK -->
 <script>
-  // Dropdown logikasi — Firebase'dan MUSTAQIL, tarmoq holatidan qat'i nazar ishlaydi
   document.addEventListener("DOMContentLoaded", () => {
     const fullNameBox = document.getElementById("fullNameBox");
     const fullNameLabel = document.getElementById("fullNameLabel");
@@ -24,6 +22,10 @@
         fullNameBox.classList.remove("placeholder");
         fullNameDropdown.classList.remove("show");
         fullNameBox.classList.remove("open");
+        const err = document.getElementById("stepError");
+        if (err) err.textContent = "";
+        const greet = document.getElementById("childGreet");
+        if (greet) greet.textContent = "";
       });
     });
 
@@ -60,30 +62,131 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const form = document.getElementById("studentForm");
-  const statusEl = document.getElementById("status");
-  const submitBtn = document.getElementById("submitBtn");
-  const fullNameInput = document.getElementById("fullName");
+  const screens = ["welcome", "step-child", "step-address", "step-parent", "step-document", "success"];
+  let current = 0;
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const nextBtn = document.getElementById("nextBtn");
+  const backBtn = document.getElementById("backBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const startBtn = document.getElementById("startBtn");
+  const againBtn = document.getElementById("againBtn");
+  const stepError = document.getElementById("stepError");
+  const progressFill = document.getElementById("progressFill");
+  const progressWrap = document.getElementById("progressWrap");
+  const nav = document.getElementById("nav");
+
+  function firstName(full) {
+    const parts = (full || "").trim().split(/\s+/);
+    return parts[1] || parts[0] || "";
+  }
+
+  function showScreen(index) {
+    current = index;
+    screens.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle("active", i === index);
+    });
+
+    const isWelcome = index === 0;
+    const isSuccess = index === screens.length - 1;
+    const isLastQuestion = index === screens.length - 2;
+
+    progressWrap.style.display = (isWelcome || isSuccess) ? "none" : "block";
+    nav.style.display = (isWelcome || isSuccess) ? "none" : "flex";
+
+    if (!isWelcome && !isSuccess) {
+      progressFill.style.width = ((index / 4) * 100) + "%";
+    }
+
+    if (index === 2) {
+      const n = firstName(document.getElementById("fullName").value);
+      document.getElementById("addressAsk").textContent = n
+        ? `${n} hozir qayerda yashaydi?`
+        : "Farzandingiz hozir qayerda yashaydi?";
+    }
+    if (index === 3) {
+      const n = firstName(document.getElementById("fullName").value);
+      document.getElementById("parentAsk").textContent = n
+        ? `${n}ning otasi va onasi haqida ham gapirib o‘ting, iltimos.`
+        : "Farzandingizning otasi va onasi haqida ham gapirib o‘ting, iltimos.";
+    }
+    if (index === 4) {
+      const n = firstName(document.getElementById("fullName").value);
+      document.getElementById("docAsk").textContent = n
+        ? `${n}ning pasporti yoki tug‘ilganlik haqidagi hujjati bormi?`
+        : "Farzandingizning pasporti yoki tug‘ilganlik haqidagi hujjati bormi?";
+    }
+
+    backBtn.style.visibility = index > 1 ? "visible" : "hidden";
+    nextBtn.style.display = isLastQuestion ? "none" : "block";
+    submitBtn.style.display = isLastQuestion ? "block" : "none";
+    stepError.textContent = "";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function validateCurrent() {
+    if (current === 1) {
+      const name = document.getElementById("fullName").value.trim();
+      if (!name) {
+        stepError.textContent = "Iltimos, avval farzandingizni tanlab qo‘ying.";
+        return false;
+      }
+    }
+    if (current === 2) {
+      const address = document.getElementById("address").value.trim();
+      if (!address) {
+        stepError.textContent = "Manzilni yozib qo‘ysangiz, rahmat.";
+        return false;
+      }
+    }
+    if (current === 3) {
+      const parentInfo = document.getElementById("parentInfo").value.trim();
+      if (!parentInfo) {
+        stepError.textContent = "Ota va onaning ismini yozib qo‘ysangiz bo‘ladi.";
+        return false;
+      }
+    }
+    if (current === 4) {
+      const documentInfo = document.getElementById("documentInfo").value.trim();
+      if (!documentInfo) {
+        stepError.textContent = "Hujjat raqamini yozib qo‘ying, iltimos.";
+        return false;
+      }
+    }
+    return true;
+  }
+
+  startBtn.addEventListener("click", () => showScreen(1));
+  nextBtn.addEventListener("click", () => {
+    if (!validateCurrent()) return;
+    showScreen(current + 1);
+  });
+  backBtn.addEventListener("click", () => {
+    if (current > 1) showScreen(current - 1);
+  });
+  againBtn.addEventListener("click", () => {
+    document.getElementById("fullName").value = "";
+    document.getElementById("fullNameLabel").textContent = "Ismini tanlang";
+    document.getElementById("fullNameBox").classList.add("placeholder");
+    document.getElementById("fullNameDropdown").querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+    document.getElementById("address").value = "";
+    document.getElementById("parentInfo").value = "";
+    document.getElementById("documentInfo").value = "";
+    showScreen(0);
+  });
+
+  submitBtn.addEventListener("click", async () => {
+    if (!validateCurrent()) return;
     submitBtn.disabled = true;
-    statusEl.textContent = "Yuborilmoqda...";
-    statusEl.className = "status info";
+    nextBtn.disabled = true;
+    stepError.textContent = "";
+    submitBtn.textContent = "Bir daqiqa...";
 
     try {
-      const fullName = fullNameInput.value.trim();
-      if (!fullName) {
-        statusEl.textContent = "❌ Iltimos, ismingizni tanlang.";
-        statusEl.className = "status error";
-        submitBtn.disabled = false;
-        return;
-      }
+      const fullName = document.getElementById("fullName").value.trim();
       const address = document.getElementById("address").value.trim();
       const parentInfo = document.getElementById("parentInfo").value.trim();
       const documentInfo = document.getElementById("documentInfo").value.trim();
-
-      statusEl.textContent = "Ma'lumotlar saqlanmoqda...";
 
       await addDoc(collection(db, "oquvchilar"), {
         fullName,
@@ -93,106 +196,166 @@
         createdAt: serverTimestamp()
       });
 
-      statusEl.textContent = "✅ Ma'lumotlar muvaffaqiyatli yuborildi. Rahmat!";
-      statusEl.className = "status success";
-      form.reset();
-      fullNameInput.value = "";
-      fullNameLabel.textContent = "Ismingizni tanlang";
-      fullNameBox.classList.add("placeholder");
-      fullNameDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
-
+      const n = firstName(fullName);
+      document.getElementById("successText").textContent = n
+        ? `Rahmat. ${n} haqida aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.`
+        : "Rahmat. Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.";
+      showScreen(screens.length - 1);
     } catch (err) {
       console.error(err);
-      statusEl.textContent = "❌ Xatolik yuz berdi: " + err.message;
-      statusEl.className = "status error";
+      stepError.textContent = "Kechirasiz, hozir ulanib bo‘lmadi. Birozdan so‘ng yana urinib ko‘ring.";
     } finally {
       submitBtn.disabled = false;
+      nextBtn.disabled = false;
+      submitBtn.textContent = "Tayyor";
     }
   });
+
+  showScreen(0);
 </script>
 
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: #f2f4f7;
+    background: linear-gradient(180deg, #f3f6fb 0%, #fafbfc 100%);
     margin: 0;
-    padding: 20px;
+    min-height: 100vh;
+    padding: 22px 16px 36px;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    color: #2a2f3a;
   }
   .card {
     background: #fff;
-    max-width: 520px;
+    max-width: 500px;
     width: 100%;
-    border-radius: 14px;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    padding: 28px 24px;
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(40, 60, 90, 0.07);
+    padding: 32px 24px 24px;
+    margin-top: 10px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.32s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .emoji {
+    width: 68px;
+    height: 68px;
+    border-radius: 22px;
+    background: #eef4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 4px auto 18px;
   }
   h1 {
-    font-size: 20px;
-    margin-bottom: 4px;
-    color: #1a1a2e;
+    font-size: 23px;
+    margin: 0 0 10px;
+    color: #1c2430;
+    text-align: center;
+    line-height: 1.35;
+    font-weight: 700;
   }
-  p.subtitle {
-    color: #666;
-    font-size: 13px;
-    margin-top: 0;
-    margin-bottom: 20px;
+  .ask {
+    text-align: left;
+    font-size: 22px;
   }
+  p.say {
+    color: #5b6573;
+    font-size: 15px;
+    margin: 0 0 22px;
+    text-align: center;
+    line-height: 1.65;
+  }
+  .say-left { text-align: left; margin-bottom: 18px; }
+
   label {
     display: block;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    margin: 14px 0 6px;
-    color: #333;
+    margin: 0 0 8px;
+    color: #6b7380;
   }
   input[type="text"],
-  input[type="date"],
-  input[type="tel"],
   textarea {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d7dce3;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 13px 14px;
+    border: 1px solid #e2e6ee;
+    border-radius: 12px;
+    font-size: 15px;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    background: #fbfcfe;
   }
   input:focus, textarea:focus {
-    border-color: #4c8bf5;
+    border-color: #7aa2f0;
+    box-shadow: 0 0 0 4px rgba(76,139,245,0.12);
+    background: #fff;
   }
-  textarea { resize: vertical; min-height: 60px; }
-  input[type="file"] {
-    width: 100%;
-    padding: 8px 0;
-    font-size: 13px;
-  }
+  textarea { resize: vertical; min-height: 120px; }
+
   button {
-    margin-top: 22px;
     width: 100%;
     background: #4c8bf5;
     color: #fff;
     border: none;
-    padding: 13px;
+    padding: 14px;
     font-size: 15px;
     font-weight: 600;
-    border-radius: 9px;
+    border-radius: 12px;
     cursor: pointer;
     transition: background 0.15s;
   }
   button:hover { background: #3b73d6; }
-  button:disabled { background: #a9c2ec; cursor: not-allowed; }
-  .status {
-    margin-top: 14px;
-    font-size: 14px;
-    text-align: center;
-    min-height: 18px;
+  button:disabled { background: #b7c9ea; cursor: not-allowed; }
+  .soft {
+    background: #f3f5f8;
+    color: #3a4150;
   }
-  .status.info { color: #4c8bf5; }
-  .status.success { color: #1e8e3e; font-weight: 600; }
-  .status.error { color: #d93025; font-weight: 600; }
-  .required { color: #d93025; }
+  .soft:hover { background: #e8ebf0; }
+
+  .nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .nav .back {
+    width: 36%;
+    background: #f3f5f8;
+    color: #3a4150;
+  }
+  .nav .back:hover { background: #e8ebf0; }
+  .nav .next, .nav .submit { flex: 1; }
+
+  .status-error {
+    min-height: 18px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #c4544c;
+    text-align: center;
+  }
+
+  .progress-wrap { margin-bottom: 22px; }
+  .progress-bar {
+    height: 4px;
+    background: #eef1f6;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #9bbcf7;
+    border-radius: 99px;
+    transition: width 0.28s ease;
+  }
 
   .select-wrap { position: relative; }
   .select-box {
@@ -200,58 +363,87 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d7dce3;
-    border-radius: 8px;
+    padding: 13px 14px;
+    border: 1px solid #e2e6ee;
+    border-radius: 12px;
     font-size: 14px;
     cursor: pointer;
-    background: #fff;
+    background: #fbfcfe;
     color: #333;
+    min-height: 50px;
   }
-  .select-box.placeholder { color: #999; }
-  .select-box:focus, .select-box.open {
-    border-color: #4c8bf5;
-    outline: none;
-  }
+  .select-box.placeholder { color: #9aa3b0; }
+  .select-box.open { border-color: #7aa2f0; background: #fff; }
   .dropdown {
     display: none;
     position: absolute;
-    top: calc(100% + 4px);
+    top: calc(100% + 6px);
     left: 0;
     right: 0;
     background: #fff;
-    border: 1px solid #d7dce3;
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    border: 1px solid #e2e6ee;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.10);
     z-index: 10;
-    overflow: hidden;
+    overflow: auto;
+    max-height: 260px;
   }
   .dropdown.show { display: block; }
   .option {
-    padding: 11px 14px;
-    font-size: 14px;
+    padding: 12px 14px;
+    font-size: 13.5px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
   }
-  .option:hover { background: #f2f6ff; }
-  .option.selected { background: #eaf1ff; font-weight: 600; color: #1a56db; }
-  .option .check { color: #4c8bf5; font-weight: bold; visibility: hidden; }
+  .option:hover { background: #f5f8ff; }
+  .option.selected { background: #eef4ff; font-weight: 600; color: #2b5fd0; }
+  .option .check { color: #4c8bf5; font-weight: bold; visibility: hidden; flex-shrink: 0; }
   .option.selected .check { visibility: visible; }
+
+  .ok {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: #eaf8ef;
+    color: #2f9e57;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 8px auto 16px;
+  }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <h1>9-V sinf o'quvchisi ma'lumotlari</h1>
-  <p class="subtitle">Iltimos, quyidagi maydonlarni to'liq va aniq to'ldiring.</p>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
 
-  <form id="studentForm">
-    <label>F.I.Sh (to'liq) <span class="required">*</span></label>
+  <div class="screen" id="welcome">
+    <div class="emoji">🌸</div>
+    <h1>Assalomu alaykum</h1>
+    <p class="say">
+      Sizni bezovta qilganimiz uchun oldindan uzr.
+      9-V sinf ota-onalaridan bir-ikki narsani so‘ramoqchimiz xolos.
+      Qiyin emas, sekin-sekin gaplashib olamiz.
+    </p>
+    <button type="button" id="startBtn">Mayli, gaplashaylik</button>
+  </div>
+
+  <div class="screen" id="step-child">
+    <h1 class="ask">Farzandingiz 9-V da o‘qiydimi?</h1>
+    <p class="say say-left">
+      Bo‘lsa, ismini ro‘yxatdan belgilab qo‘ying. Boshqa hech narsa hozircha kerak emas.
+    </p>
+    <label>Farzandingiz</label>
     <div class="select-wrap">
       <div class="select-box placeholder" id="fullNameBox" tabindex="0">
-        <span id="fullNameLabel">Ismingizni tanlang</span>
+        <span id="fullNameLabel">Ismini tanlang</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="dropdown" id="fullNameDropdown">
@@ -283,21 +475,53 @@
         <div class="option" data-value="Ўктамова Шириной Хакимбек Қизи">Ўктамова Шириной Хакимбек Қизи</div>
         <div class="option" data-value="Яқубжонов Мўминжон Бобиржон Ўғли">Яқубжонов Мўминжон Бобиржон Ўғли</div>
       </div>
-      <input type="hidden" id="fullName" required>
+      <input type="hidden" id="fullName">
     </div>
+  </div>
 
-    <label>Yashash manzili (to'liq yoziladi) <span class="required">*</span></label>
-    <textarea id="address" placeholder="Viloyat, tuman, mahalla, ko'cha, uy raqami" required></textarea>
+  <div class="screen" id="step-address">
+    <h1 class="ask" id="addressAsk">Farzandingiz hozir qayerda yashaydi?</h1>
+    <p class="say say-left">
+      Oddiy qilib yozing: qaysi tuman, qaysi mahalla, qaysi uy. Aniqroq bo‘lsa, yaxshi.
+    </p>
+    <label>Yashash joyi</label>
+    <textarea id="address" placeholder="Masalan: Farg‘ona viloyati, ... tuman, ... mahalla, ...-uy"></textarea>
+  </div>
 
-    <label>Ota-onasining F.I.Sh va ma'lumoti <span class="required">*</span></label>
-    <textarea id="parentInfo" placeholder="Otasi: F.I.Sh, ish joyi / Onasi: F.I.Sh, ish joyi" required></textarea>
+  <div class="screen" id="step-parent">
+    <h1 class="ask" id="parentAsk">Ota va onasi haqida ham aytib o‘ting</h1>
+    <p class="say say-left">
+      To‘liq ismlari va qayerda ishlashlari kifoya. Qisqa yozsangiz ham bo‘ladi.
+    </p>
+    <label>Ota va ona</label>
+    <textarea id="parentInfo" placeholder="Otasi: ...&#10;Onasi: ..."></textarea>
+  </div>
 
-    <label>Pasport yoki metrika ma'lumoti <span class="required">*</span></label>
-    <input type="text" id="documentInfo" placeholder="Seriya va raqam yoki metrika raqami" required>
+  <div class="screen" id="step-document">
+    <h1 class="ask" id="docAsk">Hujjat raqamini ham yozib qo‘ysak</h1>
+    <p class="say say-left">
+      Pasport seriyasi-raqami yoki tug‘ilganlik haqidagi hujjat raqami. Shu bilan tugaymiz.
+    </p>
+    <label>Hujjat raqami</label>
+    <input type="text" id="documentInfo" placeholder="Masalan: AA 1234567">
+  </div>
 
-    <button type="submit" id="submitBtn">Yuborish</button>
-    <div class="status" id="status"></div>
-  </form>
+  <div class="screen" id="success">
+    <div class="ok">✓</div>
+    <h1>Rahmat, bo‘ldi</h1>
+    <p class="say" id="successText">
+      Aytganlaringiz yetarli. Sizni bezovta qilganimiz uchun uzr.
+    </p>
+    <button type="button" id="againBtn" class="soft">Boshqa farzand bo‘lsa</button>
+  </div>
+
+  <div class="status-error" id="stepError"></div>
+
+  <div class="nav" id="nav">
+    <button type="button" class="back" id="backBtn">Orqaga</button>
+    <button type="button" class="next" id="nextBtn">Keyingisi</button>
+    <button type="button" class="submit" id="submitBtn">Tayyor</button>
+  </div>
 </div>
 
 </body>

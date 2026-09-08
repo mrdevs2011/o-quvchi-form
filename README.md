@@ -1,7 +1,7 @@
 # 9-V sinf o'quvchilari ma'lumot to'plash tizimi
 
 ## Fayllar
-- `index.html` — o'quvchilar to'ldiradigan forma (F.I.Sh, manzil, ota-ona ma'lumoti, hujjat ma'lumoti). Ma'lumotlar Firestore'ga `oquvchilar` kolleksiyasiga yoziladi.
+- `index.html` — ota-onalar to'ldiradigan bosqichma-bosqich forma (welcome → farzandni tanlash → manzil → ota-ona ma'lumoti → hujjat → muvaffaqiyat xabari). Ma'lumotlar Firestore'ga `oquvchilar` kolleksiyasiga yoziladi.
 - `messages/index.html` — kelib tushgan ma'lumotlarni ro'yxat ko'rinishida ko'rsatadigan sahifa (real vaqtda yangilanadi, qidiruv bor).
 
 ## GitHub Pages orqali ishga tushirish
