@@ -27,6 +27,11 @@
   if (!location.search.includes('v=')) {
     location.replace(location.pathname + '?v=' + Date.now());
   }
+  // bfcache (orqaga/oldinga tugmasi) orqali eski holat ko'rsatilishining
+  // oldini olish — bu meta tag va yuqoridagi cache-bust ham tutmaydigan holat.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) location.reload();
+  });
 </script>
 <title>9-V sinf</title>
 <link rel="icon" type="image/svg+xml" href="./logo.svg">
@@ -41,7 +46,7 @@
     const fullNameInput = document.getElementById("fullName");
 
     fullNameDropdown.querySelectorAll(".option").forEach(opt => {
-      opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19.5 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+      opt.innerHTML = `<span class="opt-name">${opt.dataset.value}</span><span class="taken-label">Tayyor</span><span class="check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12.5L10 17.5L19.5 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
       opt.addEventListener("click", (e) => {
         if (opt.hidden || takenNames.has(opt.dataset.value)) {
           e.stopPropagation();
@@ -176,7 +181,8 @@
     const selected = document.getElementById("fullName").value;
     document.querySelectorAll("#fullNameDropdown .option").forEach(opt => {
       const taken = takenNames.has(opt.dataset.value);
-      opt.hidden = taken; // band bo'lgan ism dropdown'dan butunlay yo'qoladi
+      opt.hidden = false; // ro'yxatdan hech qachon yo'qolmaydi
+      opt.classList.toggle("taken", taken); // gray + "Tayyor" belgisi shu klass orqali
       if (taken && selected === opt.dataset.value) {
         opt.classList.remove("selected");
         document.getElementById("fullName").value = "";
@@ -934,6 +940,14 @@
   .option.taken:hover { background: #f7f5ef; }
   .option.taken .opt-name { text-decoration: line-through; }
   .option.taken .check { display: none; }
+  .taken-label {
+    display: none;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .option.taken .taken-label { display: inline-flex; }
   .taken-tag {
     font-size: 10px;
     font-weight: 700;

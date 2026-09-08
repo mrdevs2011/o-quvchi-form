@@ -12,6 +12,11 @@
   if (!location.search.includes('v=')) {
     location.replace(location.pathname + '?v=' + Date.now());
   }
+  // bfcache (orqaga/oldinga tugmasi) orqali eski holat ko'rsatilishining
+  // oldini olish — bu meta tag va yuqoridagi cache-bust ham tutmaydigan holat.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) location.reload();
+  });
 </script>
 <title>9-V sinf — kelgan ma'lumotlar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
