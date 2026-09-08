@@ -98,7 +98,38 @@
     return parts[1] || parts[0] || "";
   }
 
+  const prettyNames = {
+    "Абдурахимова Зулайхо Камолиддин Қизи": "Zulayho",
+    "Абдухалилова Шукрона Акрамжон Қизи": "Shukrona",
+    "Алиханова Муқаддасхон Хасанбой Қизи": "Muqaddasxon",
+    "Ахмадалиев Муҳаммадризо Давронбек Ўғли": "Muhammadrizo",
+    "Ахмаджонов Абдуллоҳ Уткирбек Ўғли": "Abdulloh",
+    "Ахмадзулунов Абдуназар Адхамжон Ўғли": "Abdunazar",
+    "Ашурбоев Саиджалол Азизбек Ўғли": "Saidjalol",
+    "Бегижонова Робияхон Солохидин Қизи": "Robiyaxon",
+    "Боходиржонова Сожидахон Бунёдбек Қизи": "Sojidaxon",
+    "Зиёхитдинова Ойша Оятилло Қизи": "Oysha",
+    "Ибрагимова Шохсанам Иззатбек Қизи": "Shohsanam",
+    "Қобилжонова Моҳларойим Мухсинжон Қизи": "Mohlaroyim",
+    "Қодиржонов Муҳаммад Али Санжарбек Ўғли": "Muhammadali",
+    "Қосимов Муҳаммадрасул Хабибулло Ўғли": "Muhammadrasul",
+    "Мадаминхўжаева Мунисахон Азизбек Қизи": "Munisaxon",
+    "Маъруфжонов Набижон Шухратбек Ўғли": "Nabijon",
+    "Мухторжонова Ойдиноя Абдушукур Қизи": "Oydinoya",
+    "Низамов Муҳаммадазиз Мухиддин Ўғли": "Muhammadaziz",
+    "Одилжонов Убайдулло Хасанбой Ўғли": "Ubaydullo",
+    "Рафиқжонов Абдулборий Шерзодбек Ўғли": "Abdulboriy",
+    "Рафиқжонов Абдурахмон Бекзодбек Ўғли": "Abdurahmon",
+    "Собиров Муҳаммад Содиқ Шокиржон Ўғли": "Muhammadsodiq",
+    "Тўлқинбоев Абдуллоҳ Акмалжон Ўғли": "Abdulloh",
+    "Тўлқинбоева Ойшахон Сирожидин Қизи": "Oyshaxon",
+    "Убайдуллаев Муҳаммадюсуф Илхомжон Ўғли": "Muhammadyusuf",
+    "Ўктамова Шириной Хакимбек Қизи": "Shirinoy",
+    "Яқубжонов Мўминжон Бобиржон Ўғли": "Mo‘minjon"
+  };
+
   function firstNameLatin(full) {
+    if (prettyNames[full]) return prettyNames[full];
     return toLatin(firstName(full));
   }
 
@@ -159,11 +190,23 @@
         }
       });
       renderMarquee(unique);
+      revealApp();
     }, () => {
       document.getElementById("marqueeWrap").hidden = true;
+      revealApp();
     });
   } catch (e) {
     document.getElementById("marqueeWrap").hidden = true;
+    revealApp();
+  }
+
+  function revealApp() {
+    if (window.__appReady) return;
+    window.__appReady = true;
+    const boot = document.getElementById("boot");
+    if (boot) boot.remove();
+    document.getElementById("appCard").hidden = false;
+    showScreen(0);
   }
 
   function showScreen(index) {
@@ -256,12 +299,9 @@
       }
     }
     if (current === 6) {
-      const series = document.getElementById("metrikaSeries").value.trim();
       const number = document.getElementById("metrikaNumber").value.trim();
-      const letterOk = /^[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ]{2}$/.test(series);
-      const numOk = /^\d{7}$/.test(number);
-      if (!letterOk || !numOk) {
-        stepError.textContent = "Metrika: 2 ta harf va 7 ta raqam, masalan AA 1234567.";
+      if (!/^\d{7}$/.test(number)) {
+        stepError.textContent = "Metrika raqami 7 ta raqam bo‘lishi kerak.";
         return false;
       }
     }
@@ -287,8 +327,8 @@
     document.querySelectorAll(".place-card").forEach(c => c.classList.remove("on"));
     document.getElementById("fatherName").value = "";
     document.getElementById("motherName").value = "";
-    document.getElementById("metrikaSeries").value = "";
     document.getElementById("metrikaNumber").value = "";
+    document.getElementById("metrikaNumber").classList.remove("filled");
     showScreen(0);
   });
 
@@ -308,9 +348,8 @@
       const fatherName = document.getElementById("fatherName").value.trim();
       const motherName = document.getElementById("motherName").value.trim();
       const parentInfo = `Otasi: ${fatherName} / Onasi: ${motherName}`;
-      const series = document.getElementById("metrikaSeries").value.trim().toUpperCase();
       const number = document.getElementById("metrikaNumber").value.trim();
-      const documentInfo = `${series} ${number}`;
+      const documentInfo = `AA ${number}`;
 
       await addDoc(collection(db, "oquvchilar"), {
         fullName,
@@ -340,25 +379,44 @@
     }
   });
 
-  showScreen(0);
+  setTimeout(revealApp, 2500);
 
-  const seriesEl = document.getElementById("metrikaSeries");
   const numberEl = document.getElementById("metrikaNumber");
-  seriesEl.addEventListener("input", () => {
-    seriesEl.value = seriesEl.value
-      .replace(/[^A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ]/g, "")
-      .slice(0, 2)
-      .toUpperCase();
-    if (seriesEl.value.length === 2) numberEl.focus();
-  });
-  numberEl.addEventListener("input", () => {
-    numberEl.value = numberEl.value.replace(/\D/g, "").slice(0, 7);
-  });
-  numberEl.addEventListener("keydown", (e) => {
-    if (e.key === "Backspace" && numberEl.value.length === 0) {
-      seriesEl.focus();
-    }
-  });
+  const houseEl = document.getElementById("house");
+  const streetEl = document.getElementById("street");
+  const fatherEl = document.getElementById("fatherName");
+  const motherEl = document.getElementById("motherName");
+
+  function onlyDigits(el, max) {
+    el.addEventListener("input", () => {
+      el.value = el.value.replace(/\D/g, "").slice(0, max);
+      if (el === numberEl) {
+        el.classList.toggle("filled", el.value.length === 7);
+      }
+    });
+    el.addEventListener("keypress", (e) => {
+      if (e.key && !/\d/.test(e.key)) e.preventDefault();
+    });
+    el.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "").slice(0, max);
+      el.value = text;
+      if (el === numberEl) el.classList.toggle("filled", el.value.length === 7);
+    });
+  }
+  function onlyLetters(el) {
+    el.addEventListener("input", () => {
+      el.value = el.value.replace(/[0-9]/g, "");
+    });
+    el.addEventListener("keypress", (e) => {
+      if (e.key && /[0-9]/.test(e.key)) e.preventDefault();
+    });
+  }
+  onlyDigits(numberEl, 7);
+  onlyDigits(houseEl, 6);
+  onlyLetters(streetEl);
+  onlyLetters(fatherEl);
+  onlyLetters(motherEl);
 
   document.querySelectorAll(".place-card").forEach(card => {
     card.addEventListener("click", () => {
@@ -378,7 +436,8 @@
     background: linear-gradient(180deg, #f3f6fb 0%, #fafbfc 100%);
     margin: 0;
     min-height: 100vh;
-    padding: 22px 16px 36px;
+    min-height: 100dvh;
+    padding: 16px 12px 28px;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -390,9 +449,9 @@
     width: 100%;
     border-radius: 22px;
     box-shadow: 0 10px 30px rgba(40, 60, 90, 0.07);
-    padding: 32px 24px 24px;
-    margin-top: 10px;
-    overflow: hidden;
+    padding: 24px 18px 20px;
+    margin-top: 8px;
+    overflow: visible;
   }
   .screen { display: none; }
   .screen.active { display: block; animation: fadeIn 0.32s ease; }
@@ -434,7 +493,7 @@
   .say-left { text-align: left; margin-bottom: 18px; }
 
   .marquee-wrap {
-    margin: 0 -24px 22px;
+    margin: 0 -8px 22px;
     overflow: hidden;
     mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
@@ -481,7 +540,7 @@
     padding: 13px 14px;
     border: 1px solid #e2e6ee;
     border-radius: 12px;
-    font-size: 15px;
+    font-size: 16px;
     outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
     font-family: inherit;
@@ -514,7 +573,7 @@
   .soft:hover { background: #e8ebf0; }
 
   .nav {
-    display: flex;
+    display: none;
     gap: 10px;
     margin-top: 16px;
   }
@@ -522,19 +581,44 @@
     width: 36%;
     background: #f3f5f8;
     color: #3a4150;
+    visibility: hidden;
   }
   .nav .back:hover { background: #e8ebf0; }
   .nav .next, .nav .submit { flex: 1; }
+  #submitBtn { display: none; }
 
   .status-error {
-    min-height: 18px;
+    min-height: 0;
     margin-top: 10px;
     font-size: 13px;
     color: #c4544c;
     text-align: center;
   }
 
-  .progress-wrap { margin-bottom: 22px; }
+  .progress-wrap { display: none; margin-bottom: 22px; }
+
+  .boot {
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(40, 60, 90, 0.07);
+    padding: 56px 24px;
+    margin-top: 10px;
+    text-align: center;
+    color: #7a8494;
+    font-size: 14px;
+  }
+  .boot-spin {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e8edf5;
+    border-top-color: #4c8bf5;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .progress-bar {
     height: 4px;
     background: #eef1f6;
@@ -568,22 +652,27 @@
   .select-box.open { border-color: #7aa2f0; background: #fff; }
   .dropdown {
     display: none;
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin-top: 8px;
     background: #fff;
     border: 1px solid #e2e6ee;
     border-radius: 12px;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     z-index: 10;
-    overflow: auto;
-    max-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(6 * 44px);
+    -webkit-overflow-scrolling: touch;
   }
   .dropdown.show { display: block; }
   .option {
     padding: 12px 14px;
-    font-size: 13.5px;
+    font-size: 14px;
+    line-height: 1.35;
+    min-height: 44px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -614,26 +703,39 @@
 
   .doc-row {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
   }
   .doc-series {
-    width: 88px;
-    flex: 0 0 88px;
-    text-align: center;
-    letter-spacing: 3px;
-    font-weight: 700;
-    text-transform: uppercase;
+    width: 72px;
+    flex: 0 0 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e6ee;
+    border-radius: 12px;
+    background: #f3f5f8;
+    color: #1c2430;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    user-select: none;
   }
   .doc-gap {
-    color: #98a2b3;
-    font-size: 20px;
-    font-weight: 600;
+    display: none;
   }
   .doc-number {
     flex: 1;
-    letter-spacing: 3px;
-    font-weight: 600;
+    height: 58px;
+    font-size: 22px;
+    letter-spacing: 0.28em;
+    font-weight: 700;
+    text-align: center;
+  }
+  .doc-number.filled {
+    border-color: #2f9e57;
+    background: #f3fbf6;
+    box-shadow: 0 0 0 3px rgba(47,158,87,0.12);
   }
   .ok {
     width: 78px;
@@ -707,11 +809,31 @@
     color: #3d4a5c;
     margin-bottom: 8px;
   }
+
+  @media (min-width: 640px) {
+    body { padding: 28px 20px 40px; }
+    .card { padding: 32px 26px 24px; margin-top: 12px; }
+    h1 { font-size: 24px; }
+    .ask { font-size: 23px; }
+  }
+  @media (max-width: 380px) {
+    .card { padding: 20px 14px 16px; border-radius: 18px; }
+    h1 { font-size: 20px; }
+    .ask { font-size: 19px; }
+    .place-card .ttl { font-size: 16px; }
+    .nav { flex-wrap: wrap; }
+    .nav .back { width: 100%; }
+  }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="boot" id="boot">
+  <div class="boot-spin"></div>
+  Bir daqiqa...
+</div>
+
+<div class="card" id="appCard" hidden>
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   </div>
@@ -823,11 +945,10 @@
     <p class="say say-left">
       Tug‘ilganlik haqidagi guvohnoma: 2 ta harf va 7 ta raqam. Shu bilan tugaymiz.
     </p>
-    <label>Metrika seriyasi va raqami</label>
+    <label>Metrika raqami</label>
     <div class="doc-row">
-      <input type="text" id="metrikaSeries" class="doc-series" placeholder="AA" maxlength="2" autocomplete="off" inputmode="text">
-      <span class="doc-gap">—</span>
-      <input type="text" id="metrikaNumber" class="doc-number" placeholder="1234567" maxlength="7" autocomplete="off" inputmode="numeric">
+      <div class="doc-series">AA</div>
+      <input type="text" id="metrikaNumber" class="doc-number" placeholder="_______ " maxlength="7" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
     </div>
   </div>
 
