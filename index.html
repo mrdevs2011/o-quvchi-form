@@ -99,7 +99,7 @@
 
   const screens = ["welcome", "step-child", "step-mfy", "step-street", "step-house", "step-parent", "step-document", "success"];
   let current = 0;
-  let takenNames = new Set();
+  window.takenNames = new Set();
 
   const nextBtn = document.getElementById("nextBtn");
   const backBtn = document.getElementById("backBtn");
@@ -261,7 +261,7 @@
   try {
     const q = query(collection(db, "lenta"));
     onSnapshot(q, (snap) => {
-      takenNames = new Set(
+      window.takenNames = new Set(
         snap.docs.map(d => (d.data().fullName || "").trim()).filter(Boolean)
       );
       markTakenOptions();
