@@ -113,8 +113,8 @@
     if (index === 4) {
       const n = firstName(document.getElementById("fullName").value);
       document.getElementById("docAsk").textContent = n
-        ? `${n}ning pasporti yoki tug‘ilganlik haqidagi hujjati bormi?`
-        : "Farzandingizning pasporti yoki tug‘ilganlik haqidagi hujjati bormi?";
+        ? `${n}ning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?`
+        : "Farzandingizning tug‘ilganlik haqidagi guvohnomasi (metrika) bormi?";
     }
 
     backBtn.style.visibility = index > 1 ? "visible" : "hidden";
@@ -147,9 +147,12 @@
       }
     }
     if (current === 4) {
-      const documentInfo = document.getElementById("documentInfo").value.trim();
-      if (!documentInfo) {
-        stepError.textContent = "Hujjat raqamini yozib qo‘ying, iltimos.";
+      const series = document.getElementById("metrikaSeries").value.trim();
+      const number = document.getElementById("metrikaNumber").value.trim();
+      const letterOk = /^[A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ]{2}$/.test(series);
+      const numOk = /^\d{7}$/.test(number);
+      if (!letterOk || !numOk) {
+        stepError.textContent = "Metrika: 2 ta harf va 7 ta raqam, masalan AA 1234567.";
         return false;
       }
     }
@@ -171,7 +174,8 @@
     document.getElementById("fullNameDropdown").querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
     document.getElementById("address").value = "";
     document.getElementById("parentInfo").value = "";
-    document.getElementById("documentInfo").value = "";
+    document.getElementById("metrikaSeries").value = "";
+    document.getElementById("metrikaNumber").value = "";
     showScreen(0);
   });
 
@@ -186,7 +190,9 @@
       const fullName = document.getElementById("fullName").value.trim();
       const address = document.getElementById("address").value.trim();
       const parentInfo = document.getElementById("parentInfo").value.trim();
-      const documentInfo = document.getElementById("documentInfo").value.trim();
+      const series = document.getElementById("metrikaSeries").value.trim().toUpperCase();
+      const number = document.getElementById("metrikaNumber").value.trim();
+      const documentInfo = `${series} ${number}`;
 
       await addDoc(collection(db, "oquvchilar"), {
         fullName,
@@ -212,6 +218,24 @@
   });
 
   showScreen(0);
+
+  const seriesEl = document.getElementById("metrikaSeries");
+  const numberEl = document.getElementById("metrikaNumber");
+  seriesEl.addEventListener("input", () => {
+    seriesEl.value = seriesEl.value
+      .replace(/[^A-Za-zА-Яа-яЁёЎўҚқҒғҲҳ]/g, "")
+      .slice(0, 2)
+      .toUpperCase();
+    if (seriesEl.value.length === 2) numberEl.focus();
+  });
+  numberEl.addEventListener("input", () => {
+    numberEl.value = numberEl.value.replace(/\D/g, "").slice(0, 7);
+  });
+  numberEl.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && numberEl.value.length === 0) {
+      seriesEl.focus();
+    }
+  });
 </script>
 
 <style>
@@ -282,8 +306,7 @@
     margin: 0 0 8px;
     color: #6b7380;
   }
-  input[type="text"],
-  textarea {
+  input[type="text"] {
     width: 100%;
     padding: 13px 14px;
     border: 1px solid #e2e6ee;
@@ -294,12 +317,11 @@
     font-family: inherit;
     background: #fbfcfe;
   }
-  input:focus, textarea:focus {
+  input:focus {
     border-color: #7aa2f0;
     box-shadow: 0 0 0 4px rgba(76,139,245,0.12);
     background: #fff;
   }
-  textarea { resize: vertical; min-height: 120px; }
 
   button {
     width: 100%;
@@ -403,7 +425,29 @@
   .option .check { color: #4c8bf5; font-weight: bold; visibility: hidden; flex-shrink: 0; }
   .option.selected .check { visibility: visible; }
 
-  .ok {
+  .doc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .doc-series {
+    width: 88px;
+    flex: 0 0 88px;
+    text-align: center;
+    letter-spacing: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .doc-gap {
+    color: #98a2b3;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .doc-number {
+    flex: 1;
+    letter-spacing: 3px;
+    font-weight: 600;
+  }
     width: 78px;
     height: 78px;
     border-radius: 50%;
@@ -485,7 +529,7 @@
       Oddiy qilib yozing: qaysi tuman, qaysi mahalla, qaysi uy. Aniqroq bo‘lsa, yaxshi.
     </p>
     <label>Yashash joyi</label>
-    <textarea id="address" placeholder="Masalan: Farg‘ona viloyati, ... tuman, ... mahalla, ...-uy"></textarea>
+    <input type="text" id="address" placeholder="Masalan: Farg‘ona viloyati, ... tuman, ... mahalla, ...-uy">
   </div>
 
   <div class="screen" id="step-parent">
@@ -494,16 +538,20 @@
       To‘liq ismlari va qayerda ishlashlari kifoya. Qisqa yozsangiz ham bo‘ladi.
     </p>
     <label>Ota va ona</label>
-    <textarea id="parentInfo" placeholder="Otasi: ...&#10;Onasi: ..."></textarea>
+    <input type="text" id="parentInfo" placeholder="Otasi: ...  Onasi: ...">
   </div>
 
   <div class="screen" id="step-document">
-    <h1 class="ask" id="docAsk">Hujjat raqamini ham yozib qo‘ysak</h1>
+    <h1 class="ask" id="docAsk">Farzandingizning metrikasi bormi?</h1>
     <p class="say say-left">
-      Pasport seriyasi-raqami yoki tug‘ilganlik haqidagi hujjat raqami. Shu bilan tugaymiz.
+      Tug‘ilganlik haqidagi guvohnoma: 2 ta harf va 7 ta raqam. Shu bilan tugaymiz.
     </p>
-    <label>Hujjat raqami</label>
-    <input type="text" id="documentInfo" placeholder="Masalan: AA 1234567">
+    <label>Metrika seriyasi va raqami</label>
+    <div class="doc-row">
+      <input type="text" id="metrikaSeries" class="doc-series" placeholder="AA" maxlength="2" autocomplete="off" inputmode="text">
+      <span class="doc-gap">—</span>
+      <input type="text" id="metrikaNumber" class="doc-number" placeholder="1234567" maxlength="7" autocomplete="off" inputmode="numeric">
+    </div>
   </div>
 
   <div class="screen" id="success">
