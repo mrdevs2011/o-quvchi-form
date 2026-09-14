@@ -228,6 +228,53 @@
     }).join("");
   }
 
+  const exportBtn = document.getElementById("exportJsonBtn");
+  exportBtn.addEventListener("click", () => {
+    const ordered = [...allDocs]
+      .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || "", "uz"))
+      .map(d => ({
+        id: d.id,
+        fullName: d.fullName || "",
+        mfy: d.mfy || "",
+        address: d.address || "",
+        fatherName: d.fatherName || "",
+        motherName: d.motherName || "",
+        parentInfo: d.parentInfo || "",
+        documentInfo: d.documentInfo || "",
+        createdAt: d.createdAtStr || ""
+      }));
+
+    const payload = {
+      sinf: "9-V",
+      jamiOquvchilar: ordered.length,
+      generatedAt: new Date().toLocaleString("uz-UZ"),
+      oquvchilar: ordered
+    };
+
+    const jsonText = JSON.stringify(payload, null, 2);
+
+    // Faylga yuklab berish
+    const blob = new Blob([jsonText], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `9-V-oquvchilar-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    // Clipboard'ga ham nusxa
+    navigator.clipboard.writeText(jsonText).catch(() => {});
+
+    exportBtn.classList.add("copied");
+    exportBtn.textContent = "✓ Yuklandi va nusxalandi";
+    setTimeout(() => {
+      exportBtn.classList.remove("copied");
+      exportBtn.textContent = "JSON qilib olish";
+    }, 1800);
+  });
+
   searchEl.addEventListener("input", () => render(searchEl.value));
   clearBtn.addEventListener("click", () => {
     searchEl.value = "";
@@ -629,6 +676,28 @@
   #passBtn:hover { background: var(--pine-dark); }
   #passBtn:disabled { opacity: 0.6; cursor: default; }
 
+  #exportJsonBtn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    border: 1.5px solid var(--pine);
+    border-radius: 12px;
+    background: var(--pine-tint);
+    color: var(--pine-dark);
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  #exportJsonBtn:hover { background: #dcebe1; }
+  #exportJsonBtn:active { transform: scale(0.99); }
+  #exportJsonBtn.copied { background: var(--pine); color: #fff; border-color: var(--pine); }
+
   @media (max-width: 420px) {
     #logoutBtn { position: static; margin-bottom: 12px; }
     .brand { margin-bottom: 14px; }
@@ -673,6 +742,7 @@
       <input type="text" id="search" placeholder="Ism, manzil yoki MFY bo'yicha qidirish...">
       <button id="clearSearch" type="button" aria-label="Tozalash"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
     </div>
+    <button id="exportJsonBtn" type="button">JSON qilib olish</button>
   </div>
 </header>
 
